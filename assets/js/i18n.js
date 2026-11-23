@@ -1,5 +1,5 @@
 // Языки. Шаблоны написаны по-русски; для UZ и EN готовый текст на странице заменяется по словарю.
-// Лексика — как в словарях сайта (messages/uz.json, en.json). Названия банков и продуктов, условия из данных ЦБ не переводятся.
+// Лексика — как в словарях сайта (messages/uz.json, en.json). Названия банков и продуктов, условия из данных Bank.uz не переводятся.
 
 // ключ — русская строка: [узбекский, английский]
 const D = {
@@ -61,8 +61,8 @@ const D = {
   "Целевая программа": ["Maqsadli dastur", "Targeted programme"], "Целевые программы": ["Maqsadli dasturlar", "Targeted programmes"], "Первый взнос": ["Boshlangʻich toʻlov", "Down payment"],
   "Льготный период": ["Imtiyozli davr", "Grace period"], "Как выдают": ["Qanday beriladi", "How it is paid out"], "Где оформить": ["Qayerda rasmiylashtiriladi", "Where to apply"],
   "Возраст": ["Yosh", "Age"], "Документы": ["Hujjatlar", "Documents"], "Требования": ["Talablar", "Requirements"], "Вид вклада": ["Omonat turi", "Deposit type"],
-  "Выплата процентов": ["Foizlar toʻlovi", "Interest payout"], "Досрочное закрытие": ["Muddatidan oldin yopish", "Early closure"], "Без потери процентов": ["Foizlar yoʻqotilmaydi", "Without losing interest"],
-  "Где открыть": ["Qayerda ochiladi", "Where to open"], "Условия": ["Shartlar", "Terms"], "Акция": ["Aksiya", "Promo"], "Условия на портале ЦБ": ["MB portalidagi shartlar", "Terms on the CB portal"],
+  "Выплата процентов": ["Foizlar toʻlovi", "Interest payout"], "Досрочное закрытие": ["Muddatidan oldin yopish", "Early closure"], "Без потери процентов": ["Foizlar yoʻqotilmaydi", "Without losing interest"], "Возможно": ["Mumkin", "Available"],
+  "Где открыть": ["Qayerda ochiladi", "Where to open"], "Условия": ["Shartlar", "Terms"], "Акция": ["Aksiya", "Promo"], "Условия на Bank.uz": ["Shartlar Bank.uz saytida", "Terms on Bank.uz"],
   "Подробнее": ["Batafsil", "Details"], "В банк": ["Bankka", "To the bank"], "Самая высокая ставка": ["Eng yuqori stavka", "Highest rate"], "Самая низкая ставка": ["Eng past stavka", "Lowest rate"],
   "Бесплатный выпуск": ["Bepul chiqarish", "Free issue"], "Сбросить": ["Tozalash", "Reset"], "Сбросить всё": ["Hammasini tozalash", "Reset everything"],
   "Под такие условия ничего нет": ["Bunday shartlarga mos taklif yoʻq", "Nothing matches these terms"], "Измените сумму, срок или уберите фильтры": ["Summa yoki muddatni oʻzgartiring, filtrlarni olib tashlang", "Change the amount or term, or remove filters"],
@@ -98,11 +98,11 @@ const D = {
   "Разрешите доступ к геопозиции в браузере": ["Brauzerda joylashuvga ruxsat bering", "Allow location access in the browser"], "Не удалось загрузить банкоматы. Обновите страницу.": ["Bankomatlar yuklanmadi. Sahifani yangilang.", "ATMs did not load. Refresh the page."],
   "Банкомат": ["Bankomat", "ATM"],
   // банки
-  "Нет предложений на портале ЦБ": ["MB portalida takliflar yoʻq", "No offers on the CB portal"],
+  "Нет предложений на Bank.uz": ["Bank.uz saytida takliflar yoʻq", "No offers on Bank.uz"],
   // чат
   "Чем помочь?": ["Qanday yordam kerak?", "How can I help?"], "Какой вклад самый выгодный": ["Qaysi omonat eng foydali", "Which deposit pays the most"], "Где ближайший банкомат": ["Eng yaqin bankomat qayerda", "Where is the nearest ATM"],
   "Спросите про кредит, вклад, курс или банкомат": ["Kredit, omonat, kurs yoki bankomat haqida soʻrang", "Ask about a loan, deposit, rate or ATM"], "Сообщение": ["Xabar", "Message"], "Отправить": ["Yuborish", "Send"],
-  "Отвечает по данным ЦБ и банков. Решение о кредите принимает банк.": ["Markaziy bank va banklar maʼlumotlari asosida javob beradi. Kredit boʻyicha qarorni bank qabul qiladi.", "Answers from Central Bank and bank data. The bank decides on the loan."],
+  "Отвечает по данным Bank.uz и ЦБ. Решение о кредите принимает банк.": ["Bank.uz va Markaziy bank maʼlumotlari asosida javob beradi. Kredit boʻyicha qarorni bank qabul qiladi.", "Answers from Bank.uz and Central Bank data. The bank decides on the loan."],
   "Подобрать предложения": ["Takliflarni tanlash", "Find offers"], "Курсы всех банков": ["Barcha banklar kurslari", "Rates at all banks"], "Проверить, по силам ли": ["Qurbim yetishini tekshirish", "Check if I can afford it"],
   "Все предложения": ["Barcha takliflar", "All offers"], "От": ["Dan", "From"], "любой суммы": ["istalgan summa", "any amount"], "Курс ЦБ —": ["MB kursi —", "CB rate —"],
   "Самые высокие ставки по вкладам в сумах:": ["Soʻmdagi omonatlar boʻyicha eng yuqori stavkalar:", "Highest rates on deposits in UZS:"],
@@ -172,9 +172,9 @@ const R = [
   [/^Язык: (.+)$/, (m) => `Til: ${m[1]}`, (m) => `Language: ${m[1]}`],
   [/^(.+): курсы банков$/, (m, u, t) => `${t(m[1])}: banklar kurslari`, (m, u, t) => `${t(m[1])}: bank rates`],
   [/^Укажите (.+)$/, (m) => `Kiriting: ${m[1].split(", ").map((w) => WORDS[w]?.[0] || w).join(", ")}`, (m) => `Enter: ${m[1].split(", ").map((w) => WORDS[w]?.[1] || w).join(", ")}`],
-  [/^Условия банков — с портала финансовых услуг ЦБ Узбекистана, курсы — ЦБ и банки\. Данные на ([\d.]+)\. Решение о выдаче принимает банк\.$/,
-    (m) => `Bank shartlari — Oʻzbekiston Markaziy bankining moliyaviy xizmatlar portalidan, kurslar — MB va banklardan. Maʼlumotlar ${m[1]} holatiga. Kredit berish qarorini bank qabul qiladi.`,
-    (m) => `Bank terms come from the Central Bank of Uzbekistan’s financial services portal, rates from the CB and banks. Data as of ${m[1]}. The bank decides whether to lend.`],
+  [/^Условия банков и курсы — с Bank\.uz, официальный курс — ЦБ\. Данные на ([\d.]+)\. Решение о выдаче принимает банк\.$/,
+    (m) => `Bank shartlari va kurslar — Bank.uz saytidan, rasmiy kurs — Markaziy bankdan. Maʼlumotlar ${m[1]} holatiga. Kredit berish qarorini bank qabul qiladi.`,
+    (m) => `Bank terms and rates come from Bank.uz, the official rate from the Central Bank. Data as of ${m[1]}. The bank decides whether to lend.`],
   [new RegExp(`^Платёж посчитан по типичной ставке ${V}\\. На все кредиты банки дают не больше половины дохода — у вас это ${V} в месяц\\.$`),
     (m, u) => `Toʻlov odatiy ${u(m[1])} stavka boʻyicha hisoblangan. Banklar barcha kreditlarga daromadning yarmidan koʻpini bermaydi — sizda bu oyiga ${u(m[2])}.`,
     (m, u) => `The payment uses a typical rate of ${u(m[1])}. Banks allow all loans to take no more than half of income — for you that is ${u(m[2])} a month.`],

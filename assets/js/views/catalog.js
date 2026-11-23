@@ -122,7 +122,7 @@ export default async function catalog(root, { section, path, query }) {
       facts = fact("Сумма", sum) + fact("Срок", x.termText) + fact("Обеспечение", x.collateralType) + fact("Первый взнос", x.downPayment) + fact("Погашение", x.repay) + fact("Льготный период", x.grace) + fact("Как выдают", x.payout) + fact("Где оформить", x.channel) + fact("Возраст", x.age ? `${x.age[0]}–${x.age[1]} лет` : null);
       lists = list("Документы", x.docs) + list("Требования", [...(x.requirements || []), ...(x.extra || [])]);
     } else if (K === "deposits") {
-      facts = fact("Вид вклада", x.kind) + fact("Срок", x.termText) + fact("Выплата процентов", x.payout) + fact("Досрочное закрытие", x.early ? "Без потери процентов" : null) + fact("Где открыть", x.channel);
+      facts = fact("Вид вклада", x.kind) + fact("Срок", x.termText) + fact("Выплата процентов", x.payout) + fact("Досрочное закрытие", x.early ? "Возможно" : null) + fact("Где открыть", x.channel);
       lists = list("Условия", x.extra);
     } else {
       facts = fact("Валюта", x.cur) + fact("Срок действия", x.validityYears ? `${x.validityYears} ${plural(x.validityYears, ["год", "года", "лет"])}` : null) + fact("Где оформить", x.channel) + fact("Акция", x.promo);
@@ -132,7 +132,7 @@ export default async function catalog(root, { section, path, query }) {
       ${facts ? `<div class="facts">${facts}</div>` : ""}
       ${lists ? `<div class="dl-cols">${lists}</div>` : ""}
       <div class="details-act">
-        <a class="btn btn-line btn-sm" href="${safeUrl(x.url)}" target="_blank" rel="noopener">Условия на портале ЦБ ${icon("ext", "ic-s")}</a>
+        <a class="btn btn-line btn-sm" href="${safeUrl(x.url)}" target="_blank" rel="noopener">Условия на Bank.uz ${icon("ext", "ic-s")}</a>
         <label class="check-cmp"><input type="checkbox" data-cmp="${x.id}"${inCompare(cmpKind, x.id) ? " checked" : ""}>Сравнить</label>
         ${x.updatedAt ? `<span class="cap">Обновлено ${esc(dateRu(x.updatedAt))}</span>` : ""}
       </div>
@@ -167,7 +167,10 @@ export default async function catalog(root, { section, path, query }) {
   // ── Каркас ──
   const title = K === "credits" ? "Кредиты" : K === "deposits" ? "Вклады" : "Карты";
   const bankIds = [...new Set(all.map((x) => x.bankId))].sort((a, b) => bankName(a).localeCompare(bankName(b), "ru"));
-  const chipList = K === "credits" ? [["online", "Онлайн"], ["nocol", "Без залога"], ["targeted", "Целевые программы"]]
+  // «Без залога» — только когда в данных хватает кредитов с прямым «обеспечение не требуется» (как у banki.ru: фильтры по тому, что подтверждено)
+  const canNoCol = K === "credits" && all.filter((x) => (type === "all" || x.type === type) && x.noCollateral).length >= 5;
+  if (!canNoCol) f.flags.delete("nocol");
+  const chipList = K === "credits" ? [["online", "Онлайн"], ...(canNoCol ? [["nocol", "Без залога"]] : []), ["targeted", "Целевые программы"]]
     : K === "deposits" ? [["topup", "Пополнение"], ["withdraw", "Снятие"], ["capitalization", "Капитализация"], ["online", "Онлайн"]]
     : [["free", "Бесплатный выпуск"], ["usd", "В долларах"], ["online", "Онлайн"]];
 

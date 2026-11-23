@@ -9,6 +9,9 @@ const CHANNELS = [["any", "Все"], ["bank", "В отделении"], ["app", 
 export default async function rates(root, { path }) {
   const cur = NAMES[path[1]] ? path[1] : "USD";
   let channel = "any", mode = "buy", amount = null;
+  // способы обмена — только те, по которым в данных есть курсы; один способ — переключатель не нужен
+  const present = new Set(db.rates.rows.flatMap((r) => Object.values(r.rates || {}).flatMap((x) => Object.keys(x || {}))));
+  const channels = CHANNELS.filter(([id]) => id === "any" || present.has(id));
   const cbu = db.rates.cbu[cur], d = fxDelta(cur);
   const delta = d === 0 ? `<span class="delta flat">без изменений</span>` : `<span class="delta ${d > 0 ? "up" : "down"} num">${d > 0 ? "▲" : "▼"} ${fmt2(Math.abs(d))} за день</span>`;
 
@@ -32,7 +35,7 @@ export default async function rates(root, { path }) {
     </div>
     <section class="sec" aria-labelledby="banks-t">
       <div class="sec-head"><h2 id="banks-t">Курсы в банках</h2>
-        <div class="seg seg-scroll" role="group" aria-label="Где меняете">${CHANNELS.map(([id, name], i) => `<button data-ch="${id}" aria-pressed="${i === 0}">${name}</button>`).join("")}</div>
+        ${channels.length > 2 ? `<div class="seg seg-scroll" role="group" aria-label="Где меняете">${channels.map(([id, name], i) => `<button data-ch="${id}" aria-pressed="${i === 0}">${name}</button>`).join("")}</div>` : ""}
       </div>
       <div class="tbl" id="tbl"></div>
     </section>
@@ -45,11 +48,13 @@ export default async function rates(root, { path }) {
       <div class="kv"><div class="k">Продать дороже</div><div class="v num">${best.dearest ? fmt(best.dearest.buy) : "—"}</div><div class="s">${esc(best.dearest?.bank || "Нет данных")}</div></div>`;
     // сначала те, где дешевле купить
     rows.sort((a, b) => (a.sell ?? Infinity) - (b.sell ?? Infinity));
-    $("#tbl", root).innerHTML = rows.length ? `<div class="tbl-row tbl-head"><div>Банк</div><div>Банк покупает</div><div>Банк продаёт</div><div>Обновлено</div></div>` + rows.map((r) => `<div class="tbl-row">
+    // время обновления по каждому банку есть не в каждом источнике — без него колонка не нужна
+    const dated = rows.some((r) => r.updated), cls = dated ? "tbl-row" : "tbl-row tbl-3";
+    $("#tbl", root).innerHTML = rows.length ? `<div class="${cls} tbl-head"><div>Банк</div><div>Банк покупает</div><div>Банк продаёт</div>${dated ? "<div>Обновлено</div>" : ""}</div>` + rows.map((r) => `<div class="${cls}">
         <a class="tbl-bank" href="#/bank/${r.bankId}">${bankLogo(r.bankId, "sm")}<span>${esc(r.bank)}</span></a>
         <div><span class="v num${best.dearest && r.buy === best.dearest.buy ? " top-v" : ""}">${r.buy ? fmt(r.buy) : "—"}</span></div>
         <div><span class="v num${best.cheapest && r.sell === best.cheapest.sell ? " top-v" : ""}">${r.sell ? fmt(r.sell) : "—"}</span></div>
-        <div class="cap num">${esc(r.updated || "")}</div>
+        ${dated ? `<div class="cap num">${esc(r.updated || "")}</div>` : ""}
       </div>`).join("") : `<div class="empty"><b>Банки не публикуют такой курс</b><span class="muted small">Выберите другой способ обмена</span></div>`;
     paintConv(best);
   }

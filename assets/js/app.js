@@ -54,7 +54,7 @@ function paintChrome(section) {
   $("#tabbar").innerHTML = TABS.map((n) => `<a href="${n.href}"${n.id === section ? ' aria-current="page"' : ""}><i>${icon(n.icon)}</i>${n.tab || n.label}</a>`).join("");
   $("#fab").innerHTML = section === "chat" ? "" : `<a class="fab" href="#/chat" aria-label="AI-чат"><i>${icon("chat", "ic-l")}</i><span>AI-чат</span></a>`;
   $("#foot").innerHTML = `<div class="wrap foot-in">
-    <p>Условия банков — с портала финансовых услуг ЦБ Узбекистана, курсы — ЦБ и банки. Данные на ${esc(dateRu(db.date))}. Решение о выдаче принимает банк.</p>
+    <p>Условия банков и курсы — с Bank.uz, официальный курс — ЦБ. Данные на ${esc(dateRu(db.date))}. Решение о выдаче принимает банк.</p>
     <div class="foot-links"><a href="#/banks">Банки</a><a href="#/check">Что мне по силам</a><a href="#/chat">AI-чат</a><a href="${safeUrl(db.source?.url)}" target="_blank" rel="noopener">Источник данных</a></div>
   </div>`;
   document.body.classList.toggle("no-foot", section === "map" || section === "chat");

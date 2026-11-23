@@ -1,4 +1,4 @@
-// Данные сайта: каталог ЦБ (кредиты, вклады, карты), курсы, банкоматы. Снимок от даты fetchedAt.
+// Данные сайта: каталог (кредиты, вклады, карты) и курсы банков — с Bank.uz, курс ЦБ — cbu.uz, банкоматы. Снимок от даты fetchedAt.
 import { median } from "./lib.js";
 
 const cache = {};
@@ -14,7 +14,7 @@ export const LOAN_TYPES = [
 
 // Целевые программы (для бизнеса, молодёжи, на энергосбережение и т. п.) и овердрафты: дешевле обычных, но даются
 // только под свою цель. Признака в данных нет — узнаём по названию, как и помощник на сайте.
-const TARGETED_RE = /предприним|бизнес|biznes|business|tadbirkor|ishbilarmon|самозанят|фермер|дехкан|agro|агро|bog|лимон|yosh|молод[её]ж|oila|семейн|пенсион|женщин|ayol|hunarmand|ремесл|green|зел[её]н|яшил|солнечн|энерг|energy|sunlight|eco|экокредит|mahalla|махалл|kelajak|imkon|первый шаг|birinchi qadam|госслужащ|бюджет|byudjet|jdu|инвестиц|kontur|рефинанс|овердрафт|overdraft/i;
+const TARGETED_RE = /предприним|бизнес|biznes|business|tadbirkor|тадбиркор|ишбилармон|mahalla|ма[ҳх]алла|ishbilarmon|самозанят|фермер|дехкан|agro|агро|tomorq|томор[кқ]|bog|лимон|yosh|молод[её]ж|oila|семейн|пенсион|женщин|ayol|hunarmand|ремесл|green|зел[её]н|яшил|солнечн|энерг|energy|sunlight|eco|экокредит|mahalla|махалл|kelajak|imkon|первый шаг|birinchi qadam|ilk qadam|илк [кқ]адам|госслужащ|бюджет|byudjet|jdu|инвестиц|kontur|рефинанс|овердрафт|overdraft/i;
 
 let ready;
 export const db = { banks: [], bank: {}, loans: [], deposits: [], cards: [], rates: null, date: "" };

@@ -292,6 +292,7 @@ h3, .h3 { font-size: 20px; line-height: 1.25; font-weight: 600; letter-spacing: 
 .chart path.a { fill: rgba(10, 11, 16, .05); }
 .tbl { background: var(--surface); border-radius: var(--r-l); padding: 8px 24px; }
 .tbl-row { display: grid; grid-template-columns: minmax(180px, 1.6fr) minmax(0, 1fr) minmax(0, 1fr) minmax(120px, 1fr); gap: 16px; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--line); }
+.tbl-row.tbl-3 { grid-template-columns: minmax(180px, 1.6fr) minmax(0, 1fr) minmax(0, 1fr); }
 .tbl-row:last-child { border-bottom: 0; }
 .tbl-head { font-size: 13px; color: var(--ink-3); padding: 12px 0; }
 .tbl-bank { display: flex; align-items: center; gap: 12px; min-width: 0; font-weight: 600; }
@@ -558,7 +559,7 @@ h3, .h3 { font-size: 20px; line-height: 1.25; font-weight: 600; letter-spacing: 
   .rates-top, .check { grid-template-columns: minmax(0, 1fr); gap: 10px; }
   .rate-hero .fx-rate { font-size: 36px; }
   .tbl { padding: 4px 16px; border-radius: 20px; }
-  .tbl-row { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
+  .tbl-row, .tbl-row.tbl-3 { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
   .tbl-row > :nth-child(4) { display: none; }
   .tbl-row .v { font-size: 15px; }
   .verdict { position: static; }

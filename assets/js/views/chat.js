@@ -14,7 +14,7 @@ export default async function chat(root, { query }) {
     </div>
     <div class="chat-box">
       <form class="ask-form" id="say"><input name="q" placeholder="Спросите про кредит, вклад, курс или банкомат" aria-label="Сообщение" autocomplete="off"><button class="btn btn-primary" aria-label="Отправить">${icon("send")}</button></form>
-      <p class="cap">Отвечает по данным ЦБ и банков. Решение о кредите принимает банк.</p>
+      <p class="cap">Отвечает по данным Bank.uz и ЦБ. Решение о кредите принимает банк.</p>
     </div>
   </div>`;
   const log = $("#log", root);

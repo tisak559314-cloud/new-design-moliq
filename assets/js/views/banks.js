@@ -13,7 +13,7 @@ export default async function banks(root, { section, path }) {
     <div class="banks">${list.map((b) => {
       const l = count(db.loans, b.id), d = count(db.deposits, b.id), c = count(db.cards, b.id);
       return `<a class="bank-card" href="#/bank/${b.id}"><div class="best-head">${bankLogo(b.id)}<div><b>${esc(b.name)}</b></div></div>
-        <p class="num">${[l && `${l} ${plural(l, ["кредит", "кредита", "кредитов"])}`, d && `${d} ${plural(d, ["вклад", "вклада", "вкладов"])}`, c && `${c} ${plural(c, ["карта", "карты", "карт"])}`].filter(Boolean).join(" · ") || "Нет предложений на портале ЦБ"}</p></a>`;
+        <p class="num">${[l && `${l} ${plural(l, ["кредит", "кредита", "кредитов"])}`, d && `${d} ${plural(d, ["вклад", "вклада", "вкладов"])}`, c && `${c} ${plural(c, ["карта", "карты", "карт"])}`].filter(Boolean).join(" · ") || "Нет предложений на Bank.uz"}</p></a>`;
     }).join("")}</div>
   </div>`;
 }
