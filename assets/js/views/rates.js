@@ -69,16 +69,66 @@ export default async function rates(root, { path }) {
     if (b?.dataset.ch) { channel = b.dataset.ch; $$("[data-ch]", root).forEach((x) => x.setAttribute("aria-pressed", String(x === b))); paint(); }
     else if (b?.dataset.mode) { mode = b.dataset.mode; $$("[data-mode]", root).forEach((x) => x.setAttribute("aria-pressed", String(x === b))); paintConv(); }
   });
+  bindChart($("#chart", root), series(cur), cbu);
   paint();
 }
 
-/** Курс ЦБ за последние 30 дней */
+/** Курс ЦБ за последние 30 дней: [{ d: "ГГГГ-ММ-ДД", v }] */
+const series = (cur) => db.history.slice(-30).map((x) => ({ d: x.d, v: x.cbu?.[cur] })).filter((p) => p.v > 0);
+const CH = { W: 600, H: 120, pad: 6 };
+/** Положение точки на графике в долях ширины и высоты */
+function scale(pts) {
+  const vals = pts.map((p) => p.v), min = Math.min(...vals), max = Math.max(...vals), span = max - min || 1;
+  return { min, max, x: (i) => i / (pts.length - 1), y: (v) => (CH.pad + (1 - (v - min) / span) * (CH.H - CH.pad * 2)) / CH.H };
+}
+
 function chart(cur) {
-  const pts = db.history.slice(-30).map((x) => x.cbu?.[cur]).filter((v) => v > 0);
+  const pts = series(cur);
   if (pts.length < 2) return "";
-  const W = 600, H = 120, pad = 6, min = Math.min(...pts), max = Math.max(...pts), span = max - min || 1;
-  const xy = pts.map((v, i) => [(i / (pts.length - 1)) * W, pad + (1 - (v - min) / span) * (H - pad * 2)]);
-  const line = xy.map(([x, y], i) => `${i ? "L" : "M"}${x.toFixed(1)} ${y.toFixed(1)}`).join(" ");
-  return `<figure><svg class="chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Курс ЦБ за 30 дней: от ${fmt2(min)} до ${fmt2(max)}"><path class="a" d="${line} L${W} ${H} L0 ${H} Z"/><path class="l" d="${line}" vector-effect="non-scaling-stroke"/></svg>
-    <figcaption class="cap num" style="display:flex;justify-content:space-between;margin-top:6px"><span>30 дней</span><span>${fmt2(min)} – ${fmt2(max)}</span></figcaption></figure>`;
+  const { W, H } = CH, sc = scale(pts);
+  const line = pts.map((p, i) => `${i ? "L" : "M"}${(sc.x(i) * W).toFixed(1)} ${(sc.y(p.v) * H).toFixed(1)}`).join(" ");
+  return `<figure>
+    <div class="chart-box" id="chart" tabindex="0" role="group" aria-label="Курс ЦБ за 30 дней: от ${fmt2(sc.min)} до ${fmt2(sc.max)}">
+      <svg class="chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true"><path class="a" d="${line} L${W} ${H} L0 ${H} Z"/><path class="l" d="${line}" vector-effect="non-scaling-stroke"/></svg>
+      <i class="chart-line" hidden></i><i class="chart-dot" hidden></i>
+      <div class="chart-tip" role="status" hidden></div>
+    </div>
+    <figcaption class="cap num" style="display:flex;justify-content:space-between;margin-top:6px"><span>30 дней</span><span>${fmt2(sc.min)} – ${fmt2(sc.max)}</span></figcaption></figure>`;
+}
+
+/**
+ * График отвечает на курсор, палец и стрелки клавиатуры: показывает дату, курс в этот день
+ * и на сколько он выше или ниже сегодняшнего (today).
+ */
+function bindChart(box, pts, today) {
+  if (!box || pts.length < 2) return;
+  const line = $(".chart-line", box), dot = $(".chart-dot", box), tip = $(".chart-tip", box), sc = scale(pts);
+  let at = -1;
+  const hide = () => { at = -1; line.hidden = dot.hidden = tip.hidden = true; };
+  const show = (i) => {
+    i = Math.max(0, Math.min(pts.length - 1, i));
+    if (i === at) return;
+    at = i;
+    const p = pts[i], x = sc.x(i) * 100, y = sc.y(p.v) * 100, diff = p.v - today;
+    const delta = Math.abs(diff) < 0.005 ? `<span class="delta flat">как сегодня</span>`
+      : `<span class="delta ${diff > 0 ? "up" : "down"}"><span class="num">${diff > 0 ? "▲" : "▼"} ${fmt2(Math.abs(diff))}</span><span>${diff > 0 ? "выше, чем сегодня" : "ниже, чем сегодня"}</span></span>`;
+    tip.innerHTML = `<span class="cap num">${esc(dateRu(p.d))}</span><b class="num">${fmt2(p.v)} сум</b>${delta}`;
+    line.hidden = dot.hidden = tip.hidden = false;
+    line.style.left = dot.style.left = `${x}%`;
+    dot.style.top = `${y}%`;
+    // подсказка — над точкой и не вылезает за края графика
+    const half = tip.offsetWidth / 2, w = box.clientWidth, px = (x / 100) * w;
+    tip.style.left = `${Math.max(half, Math.min(w - half, px))}px`;
+    tip.style.top = `${(y / 100) * box.clientHeight}px`;
+  };
+  const point = (e) => { const r = box.getBoundingClientRect(); show(Math.round(((e.clientX - r.left) / r.width) * (pts.length - 1))); };
+  box.addEventListener("pointermove", point);
+  box.addEventListener("pointerdown", point);
+  // мышь ушла — убираем; после касания пальцем подсказка остаётся, пока не коснутся в другом месте
+  box.addEventListener("pointerleave", (e) => { if (e.pointerType === "mouse") hide(); });
+  box.addEventListener("blur", hide);
+  box.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowLeft" || e.key === "ArrowRight") { e.preventDefault(); show((at < 0 ? pts.length - 1 : at) + (e.key === "ArrowLeft" ? -1 : 1)); }
+    else if (e.key === "Escape") hide();
+  });
 }

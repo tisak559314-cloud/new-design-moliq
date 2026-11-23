@@ -5,6 +5,51 @@ export const TASHKENT = [69.2797, 41.3111];
 export const FLAG_BITS = { cashOut: 1, cashIn: 2, fx: 4 | 8, h24: 16 };
 export const SYSTEMS = ["Uzcard", "Humo", "Visa", "Mastercard", "UnionPay", "МИР"];
 
+// Подложка — как на moliq.antigradient.uz: стиль OpenFreeMap «Positron», перекрашенный в палитру Moliq, подписи на русском
+const P = {
+  land: "#eef3ff", residential: "#e3eafa", park: "#d9f0e3", wood: "#cfeadb", water: "#bcd0ff", waterway: "#a8c0fb",
+  building: "#d8e1f5", buildingLine: "#cfd9ef", road: "#ffffff", roadCasing: "#d3dcef", motorway: "#f0f9c8", motorwayCasing: "#c9dc79",
+  rail: "#cfd7eb", railDash: "#f6f8fe", boundary: "#b4bfdc", label: "#3b3f4c", labelStrong: "#0a0b10", labelMuted: "#6c7182", labelWater: "#2d5bff", halo: "#ffffff",
+};
+const RU_NAME = ["coalesce", ["get", "name:ru"], ["get", "name"]];
+function patchFor(id, type) {
+  if (id === "background") return { paint: { "background-color": P.land } };
+  if (id === "park") return { paint: { "fill-color": P.park } };
+  if (id === "landcover_wood") return { paint: { "fill-color": P.wood } };
+  if (id === "water") return { paint: { "fill-color": P.water } };
+  if (id === "waterway") return { paint: { "line-color": P.waterway } };
+  if (id === "landuse_residential") return { paint: { "fill-color": P.residential } };
+  if (id === "building") return { paint: { "fill-color": P.building, "fill-outline-color": P.buildingLine } };
+  if (id === "road_area_pier" || id === "road_pier") return type === "fill" ? { paint: { "fill-color": P.land } } : { paint: { "line-color": P.land } };
+  if (/motorway.*casing/.test(id)) return { paint: { "line-color": P.motorwayCasing } };
+  if (/motorway.*(inner)/.test(id)) return { paint: { "line-color": P.motorway } };
+  if (id === "highway_motorway_subtle") return { paint: { "line-color": P.motorwayCasing } };
+  if (/casing/.test(id) && type === "line") return { paint: { "line-color": P.roadCasing } };
+  if (id === "highway_major_subtle") return { paint: { "line-color": P.roadCasing } };
+  if (/^highway_(minor|path|major_inner)$/.test(id)) return { paint: { "line-color": P.road } };
+  if (/^railway/.test(id)) return { paint: { "line-color": /dashline/.test(id) ? P.railDash : P.rail } };
+  if (/^boundary/.test(id)) return { paint: { "line-color": P.boundary } };
+  if (type === "symbol" && !/shield/.test(id)) {
+    const color = /^water/.test(id) ? P.labelWater : /^label_(city|country)/.test(id) ? P.labelStrong : /^highway-name/.test(id) ? P.labelMuted : P.label;
+    return { paint: { "text-color": color, "text-halo-color": P.halo, "text-halo-width": 1.2 }, layout: { "text-field": RU_NAME } };
+  }
+  return null;
+}
+/** Копия стиля, перекрашенная под Moliq */
+export function moliqMapStyle(base) {
+  return { ...base, layers: base.layers.map((l) => {
+    const patch = patchFor(l.id, l.type);
+    if (!patch) return l;
+    const next = { ...l };
+    if (patch.paint) next.paint = { ...l.paint, ...patch.paint };
+    if (patch.layout && l.layout?.["text-field"] !== undefined) next.layout = { ...l.layout, ...patch.layout };
+    return next;
+  }) };
+}
+let styleReady;
+/** Стиль подложки: загружается один раз; не скачался — берём исходный адрес, карта всё равно откроется */
+const mapStyle = () => (styleReady ??= fetch(STYLE).then((r) => { if (!r.ok) throw new Error(String(r.status)); return r.json(); }).then(moliqMapStyle).catch(() => { styleReady = null; return STYLE; }));
+
 let lib;
 export function loadMapLibre() {
   return (lib ??= new Promise((res, rej) => {
@@ -61,8 +106,8 @@ function bankPin(src) {
  * Возвращает { map, setFilter(f), remove() }.
  */
 export async function atmMap(el, data, opts = {}) {
-  const gl = await loadMapLibre();
-  const map = new gl.Map({ container: el, style: STYLE, center: opts.center || TASHKENT, zoom: opts.zoom ?? 11, interactive: opts.interactive !== false, attributionControl: { compact: true }, cooperativeGestures: false });
+  const [gl, style] = await Promise.all([loadMapLibre(), mapStyle()]);
+  const map = new gl.Map({ container: el, style, center: opts.center || TASHKENT, zoom: opts.zoom ?? 11, interactive: opts.interactive !== false, attributionControl: { compact: true }, cooperativeGestures: false });
   let filter = opts.filter || {};
   await new Promise((res) => map.once("load", res));
   map.addSource("atms", { type: "geojson", data: toGeo(data, filter) });

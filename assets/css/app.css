@@ -220,7 +220,7 @@ h3, .h3 { font-size: 20px; line-height: 1.25; font-weight: 600; letter-spacing: 
 .mapt { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); background: var(--surface); border-radius: var(--r-l); overflow: hidden; min-height: 340px; }
 .mapt-l { padding: 28px; display: flex; flex-direction: column; gap: 16px; }
 .mapt-l .btn { margin-top: auto; align-self: flex-start; }
-.mapt-r { position: relative; background: #e6ebf0; min-height: 260px; }
+.mapt-r { position: relative; background: #eef3ff; min-height: 260px; }
 .mapt-r .mapbox, .mapbox.maplibregl-map { position: absolute; inset: 0; font-family: var(--font); }
 .mapt-count { position: absolute; left: 16px; top: 16px; z-index: 2; background: var(--surface); border-radius: var(--pill); height: 36px; padding: 0 14px; display: inline-flex; align-items: center; font-size: 14px; font-weight: 600; box-shadow: 0 2px 8px rgba(10, 11, 16, .12); }
 
@@ -288,6 +288,15 @@ h3, .h3 { font-size: 20px; line-height: 1.25; font-weight: 600; letter-spacing: 
 .conv-out { background: var(--soft); border-radius: var(--r-m); padding: 14px 16px; }
 .conv-out .v { font-size: 24px; font-weight: 700; letter-spacing: -.02em; }
 .chart { width: 100%; height: 120px; }
+.chart-box { position: relative; cursor: crosshair; touch-action: pan-y; border-radius: 8px; }
+.chart-box .chart { display: block; }
+.chart-line { position: absolute; top: 0; bottom: 0; width: 1px; margin-left: -.5px; background: var(--ink); opacity: .22; pointer-events: none; }
+.chart-dot { position: absolute; width: 12px; height: 12px; margin: -6px 0 0 -6px; border-radius: 50%; background: var(--ink); border: 2.5px solid var(--surface); box-shadow: 0 1px 4px rgba(10, 11, 16, .3); pointer-events: none; }
+.chart-tip { position: absolute; z-index: 2; transform: translate(-50%, calc(-100% - 14px)); display: grid; gap: 2px; padding: 10px 12px; border-radius: 12px; background: var(--surface); box-shadow: var(--shadow-pop); white-space: nowrap; pointer-events: none; }
+.chart-tip b { font-size: 16px; font-weight: 700; letter-spacing: -.01em; }
+.chart-tip .delta { gap: 5px; }
+.chart-tip .delta span + span { font-weight: 500; }
+.chart-line[hidden], .chart-dot[hidden], .chart-tip[hidden] { display: none; }
 .chart path.l { fill: none; stroke: var(--ink); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
 .chart path.a { fill: rgba(10, 11, 16, .05); }
 .tbl { background: var(--surface); border-radius: var(--r-l); padding: 8px 24px; }
@@ -363,7 +372,7 @@ h3, .h3 { font-size: 20px; line-height: 1.25; font-weight: 600; letter-spacing: 
 .map-item b { display: block; font-size: 15px; font-weight: 600; line-height: 1.3; }
 .map-item span { display: block; font-size: 13px; color: var(--ink-3); line-height: 1.4; }
 .map-item .dist { margin-left: auto; font-size: 13px; color: var(--ink-2); white-space: nowrap; font-weight: 500; }
-.map-canvas { position: relative; background: #e6ebf0; min-height: 0; }
+.map-canvas { position: relative; background: #eef3ff; min-height: 0; }
 .mapbox, .mapbox.maplibregl-map { position: absolute; inset: 0; font-family: var(--font); }
 .map-locate { position: absolute; left: 16px; top: 16px; z-index: 3; background: var(--surface); box-shadow: 0 2px 10px rgba(10, 11, 16, .16); }
 .map-pop { font-family: var(--font); min-width: 240px; max-width: 280px; display: grid; gap: 10px; }

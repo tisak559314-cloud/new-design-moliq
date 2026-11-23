@@ -62,6 +62,7 @@ const D = {
   "Льготный период": ["Imtiyozli davr", "Grace period"], "Как выдают": ["Qanday beriladi", "How it is paid out"], "Где оформить": ["Qayerda rasmiylashtiriladi", "Where to apply"],
   "Возраст": ["Yosh", "Age"], "Документы": ["Hujjatlar", "Documents"], "Требования": ["Talablar", "Requirements"], "Вид вклада": ["Omonat turi", "Deposit type"],
   "Выплата процентов": ["Foizlar toʻlovi", "Interest payout"], "Досрочное закрытие": ["Muddatidan oldin yopish", "Early closure"], "Без потери процентов": ["Foizlar yoʻqotilmaydi", "Without losing interest"], "Возможно": ["Mumkin", "Available"],
+  "выше, чем сегодня": ["bugungidan yuqori", "higher than today"], "ниже, чем сегодня": ["bugungidan past", "lower than today"], "как сегодня": ["bugungidek", "same as today"],
   "Где открыть": ["Qayerda ochiladi", "Where to open"], "Условия": ["Shartlar", "Terms"], "Акция": ["Aksiya", "Promo"], "Условия на Bank.uz": ["Shartlar Bank.uz saytida", "Terms on Bank.uz"],
   "Подробнее": ["Batafsil", "Details"], "В банк": ["Bankka", "To the bank"], "Самая высокая ставка": ["Eng yuqori stavka", "Highest rate"], "Самая низкая ставка": ["Eng past stavka", "Lowest rate"],
   "Бесплатный выпуск": ["Bepul chiqarish", "Free issue"], "Сбросить": ["Tozalash", "Reset"], "Сбросить всё": ["Hammasini tozalash", "Reset everything"],
