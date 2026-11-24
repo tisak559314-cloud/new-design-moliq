@@ -107,7 +107,12 @@ function bankPin(src) {
  */
 export async function atmMap(el, data, opts = {}) {
   const [gl, style] = await Promise.all([loadMapLibre(), mapStyle()]);
-  const map = new gl.Map({ container: el, style, center: opts.center || TASHKENT, zoom: opts.zoom ?? 11, interactive: opts.interactive !== false, attributionControl: { compact: true }, cooperativeGestures: false });
+  const map = new gl.Map({ container: el, style, center: opts.center || TASHKENT, zoom: opts.zoom ?? 11, interactive: opts.interactive !== false, attributionControl: false, cooperativeGestures: false });
+  // подпись источников карты — слева внизу (справа внизу кнопка AI-чата) и свёрнута в «i»: текст — по нажатию
+  map.addControl(new gl.AttributionControl({ compact: true }), "bottom-left");
+  const foldAttrib = () => { const a = el.querySelector(".maplibregl-ctrl-attrib"); if (a) { a.removeAttribute("open"); a.classList.remove("maplibregl-compact-show"); } };
+  map.once("load", foldAttrib);
+  map.once("idle", foldAttrib);
   let filter = opts.filter || {};
   await new Promise((res) => map.once("load", res));
   map.addSource("atms", { type: "geojson", data: toGeo(data, filter) });
