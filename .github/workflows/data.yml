@@ -1,0 +1,41 @@
+# Данные сайта — каждый день около 11:00 по Ташкенту (ЦБ обновляет цены и остатки слитков к 10:30), ключи не нужны.
+# Что делает tools/refresh.mjs: золото (cbu.uz, gold-api.com); каталог, курсы и карта — то, что опубликовано на основном
+# сайте; проверка, что лимиты бесплатных переводов всё ещё названы на страницах банков; напоминание про индекс жалоб ЦБ.
+# Изменения в data/ коммитятся в main — хостинг пересобирает сайт сам. Предупреждения («проверьте тариф», «акция кончается»)
+# видны в журнале запуска и в его сводке; лимиты и индекс жалоб правятся руками в data/p2p.json и data/complaints.json.
+name: Данные
+on:
+  schedule: [{ cron: "0 6 * * *" }]
+  workflow_dispatch: {}
+permissions: { contents: write }
+concurrency: { group: data, cancel-in-progress: false }
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24 }
+      - name: Обновить данные
+        run: |
+          set -o pipefail
+          node tools/refresh.mjs --from-site=https://moliq.antigradient.uz | tee refresh.log
+      - name: Сводка
+        if: always()
+        run: |
+          {
+            echo '### Обновление данных'
+            echo '```'
+            cat refresh.log 2>/dev/null || echo 'журнала нет'
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          grep '⚠️' refresh.log 2>/dev/null | sed 's/^ *⚠️ */::warning::/' || true
+      - name: Выложить изменения
+        if: always()
+        run: |
+          git add -- data
+          if git diff --cached --quiet; then echo "Данные те же — выкладывать нечего"; exit 0; fi
+          git -c user.name="moliq-data-bot" -c user.email="actions@users.noreply.github.com" commit -q -m "Данные: обновление $(date -u +%F)"
+          git pull -q --rebase origin main && git push -q origin main
+          echo "Выложено: $(git log -1 --format=%h)"

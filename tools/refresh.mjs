@@ -3,9 +3,11 @@
  * Обновить данные нового сайта одним запуском (его вызывает moliq/scripts/update.sh, можно и вручную):
  *
  *   node tools/refresh.mjs --from=../moliq/bankmap-next/public/data [--skip=atms.json,rates.json]
+ *   node tools/refresh.mjs --from-site=https://moliq.antigradient.uz     то же, но копии качаются с основного сайта
  *
- * 1. Каталог, курсы, история курсов и карта — копии из папки данных основного сайта (--from). Файлы из --skip не трогаются:
- *    так update.sh не переносит набор, не прошедший проверку. Без --from этот шаг пропускается.
+ * 1. Каталог, курсы, история курсов и карта — копии данных основного сайта: из его папки (--from, так делает update.sh)
+ *    или из опубликованного на нём (--from-site, так делает расписание в GitHub: .github/workflows/data.yml).
+ *    Файлы из --skip не трогаются: так update.sh не переносит набор, не прошедший проверку. Без обоих ключей шаг пропускается.
  * 2. Золото — tools/gold.mjs (цены и остатки слитков ЦБ, мировая цена, ещё один день в историю).
  * 3. Переводы без комиссии — лимиты в data/p2p.json ведутся вручную, сами не меняются. Здесь проверяется, что число,
  *    на которое мы ссылаемся, всё ещё стоит на странице банка (поле watch: адрес и фразы). Стоит — дата «Проверено»
@@ -36,22 +38,39 @@ const warn = (t) => { warnings.push(t); console.log(`  ⚠️  ${t}`); };
 let failed = false;
 
 // ── 1. копии данных основного сайта ──
-function copyData() {
-  const from = arg("from");
-  if (!from) return; // без --from переносить нечего: обновляется только своё — золото, переводы, индекс жалоб
+/** Записать файл в data/, если он годный и отличается от нынешнего */
+function put(name, buf) {
+  const dst = path.join(DATA, name), next = JSON.parse(buf);
+  // карта без адресов и подробностей — не та версия, что опубликована: новый сайт показывает адреса
+  if (name === "atms.json" && !(next.detailsFormat && next.atms?.length >= 4000)) { warn(`${name}: в источнике нет адресов или мало точек — оставляю прежний`); return; }
+  if (fs.existsSync(dst) && Buffer.compare(buf, fs.readFileSync(dst)) === 0) { console.log(`  = ${name}: без изменений`); return; }
+  fs.writeFileSync(dst, buf);
+  console.log(`  ✓ ${name}: обновлён`);
+}
+async function copyData() {
+  const from = arg("from"), site = arg("from-site")?.replace(/\/+$/, "");
+  if (!from && !site) return; // переносить нечего: обновляется только своё — золото, переводы, индекс жалоб
   console.log("Новый сайт · каталог, курсы и карта");
   const skip = new Set((arg("skip") || "").split(",").filter(Boolean));
+  let manifest = null;
+  if (site) {
+    try {
+      const r = await fetch(`${site}/api/data/manifest`, { headers: { "User-Agent": UA, "Cache-Control": "no-cache" }, signal: AbortSignal.timeout(30_000) });
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      manifest = await r.json();
+    } catch (e) { failed = true; warn(`основной сайт не отдал список данных (${e.message}) — каталог, курсы и карта остаются прежними`); return; }
+  }
   for (const name of COPY) {
-    const src = path.resolve(from, name), dst = path.join(DATA, name);
     if (skip.has(name)) { console.log(`  – ${name}: не прошёл проверку основного сайта — оставляю прежний`); continue; }
     try {
-      const buf = fs.readFileSync(src), next = JSON.parse(buf);
-      // карта без адресов и подробностей — не та версия, что опубликована: новый сайт показывает адреса
-      if (name === "atms.json" && !(next.detailsFormat && next.atms?.length >= 4000)) { warn(`${name}: в источнике нет адресов или мало точек — оставляю прежний`); continue; }
-      if (fs.existsSync(dst) && Buffer.compare(buf, fs.readFileSync(dst)) === 0) { console.log(`  = ${name}: без изменений`); continue; }
-      fs.writeFileSync(dst, buf);
-      console.log(`  ✓ ${name}: обновлён`);
-    } catch (e) { failed = true; warn(`${name}: не скопирован — ${e.message}`); }
+      if (site) {
+        const url = manifest.files?.[name]?.url;
+        if (!url) { warn(`${name}: на основном сайте не опубликован — оставляю прежний`); continue; }
+        const r = await fetch(url, { headers: { "User-Agent": UA }, signal: AbortSignal.timeout(120_000) });
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        put(name, Buffer.from(await r.arrayBuffer()));
+      } else put(name, fs.readFileSync(path.resolve(from, name)));
+    } catch (e) { failed = true; warn(`${name}: не обновлён — ${e.message}`); }
   }
 }
 
@@ -125,7 +144,7 @@ function complaints() {
   else console.log(`  ✓ индекс жалоб: ${data.period}; следующий квартал ЦБ опубликует примерно ${due}`);
 }
 
-copyData();
+await copyData();
 console.log("Новый сайт · золото");
 gold();
 console.log("Новый сайт · переводы без комиссии");

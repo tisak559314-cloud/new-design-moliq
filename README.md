@@ -42,7 +42,11 @@
 
 ## Обновление сайта
 
-Данные обновляет `moliq/scripts/update.sh` — в конце каждого запуска (или отдельно: `scripts/update.sh site`, около минуты):
+Данные обновляются сами: расписание в GitHub (`.github/workflows/data.yml`) каждый день около 11:00 по Ташкенту запускает
+`node tools/refresh.mjs --from-site=https://moliq.antigradient.uz` и коммитит изменения в `data/` — ключи не нужны.
+Предупреждения («проверьте тариф», «акция кончается») видны в сводке запуска на вкладке Actions.
+
+Вручную то же делает `moliq/scripts/update.sh` — в конце каждого запуска (или отдельно: `scripts/update.sh site`, около минуты):
 
 1. `node tools/refresh.mjs` — золото (`tools/gold.mjs`), копии `catalog.json`, `rates.json`, `rates-history.json`, `atms.json`
    из только что опубликованных данных основного сайта, проверка лимитов переводов по страницам банков и напоминание
