@@ -8,7 +8,7 @@
    "url": "https://click.uz/ru/tarifs"
   }
  },
- "note": "Лимит — сколько в месяц можно перевести на карту другого банка без комиссии. feeAfter — комиссия сверх лимита, только если она названа на сайте банка. ownCard: true — переводить можно только со своей карты этого банка, false — с карты любого банка, null — банк не уточняет. periodFrom — откуда взято, что лимит месячный, если на сайте банка срок не назван.",
+ "note": "Лимит — сколько в месяц можно перевести на карту другого банка без комиссии. feeAfter — комиссия сверх лимита, только если она названа на сайте банка. ownCard: true — переводить можно только со своей карты этого банка, false — с карты любого банка, null — банк не уточняет. periodFrom — откуда взято, что лимит месячный, если на сайте банка срок не назван. watch — страница банка и фразы, по которым tools/refresh.mjs проверяет, что лимит на ней тот же.",
  "apps": [
   {
    "id": "aab",
@@ -46,7 +46,13 @@
     "title": "aab.uz",
     "url": "https://aab.uz/ru/press_center/news/besplatnye-denezhnye-perevody-v-prilozhenii-alliance-pay/"
    },
-   "checkedAt": "2026-11-24"
+   "checkedAt": "2026-11-24",
+   "watch": {
+    "url": "https://aab.uz/ru/press_center/news/besplatnye-denezhnye-perevody-v-prilozhenii-alliance-pay/",
+    "has": [
+     "до 10 млн"
+    ]
+   }
   },
   {
    "id": "brb",
@@ -76,7 +82,13 @@
     "title": "brb.uz",
     "url": "https://brb.uz/ru/brb-mobil-ilovasi"
    },
-   "checkedAt": "2026-11-24"
+   "checkedAt": "2026-11-24",
+   "watch": {
+    "url": "https://brb.uz/ru/brb-mobil-ilovasi",
+    "has": [
+     "10 млн"
+    ]
+   }
   },
   {
    "id": "ipoteka",
@@ -104,7 +116,13 @@
     "title": "ipotekabank.uz",
     "url": "https://www.ipotekabank.uz/services/p2p/"
    },
-   "checkedAt": "2026-11-24"
+   "checkedAt": "2026-11-24",
+   "watch": {
+    "url": "https://www.ipotekabank.uz/services/p2p/",
+    "has": [
+     "10 mln"
+    ]
+   }
   },
   {
    "id": "open",
@@ -132,7 +150,13 @@
     "title": "openbank.uz",
     "url": "https://openbank.uz/"
    },
-   "checkedAt": "2026-11-24"
+   "checkedAt": "2026-11-24",
+   "watch": {
+    "url": "https://openbank.uz/",
+    "has": [
+     "5 mln"
+    ]
+   }
   },
   {
    "id": "hamkor",
@@ -160,7 +184,13 @@
     "title": "hamkorbank.uz",
     "url": "https://hamkorbank.uz/press-center/news/besplatnye-perevody-s-karty-na-kartu/"
    },
-   "checkedAt": "2026-11-24"
+   "checkedAt": "2026-11-24",
+   "watch": {
+    "url": "https://hamkorbank.uz/physical/bank-cards/humo/",
+    "has": [
+     "5 млн"
+    ]
+   }
   },
   {
    "id": "mkb",
@@ -189,7 +219,13 @@
     "title": "mkbank.uz",
     "url": "https://mkbank.uz/ru/private/remote-banking/mobile-app/"
    },
-   "checkedAt": "2026-11-24"
+   "checkedAt": "2026-11-24",
+   "watch": {
+    "url": "https://mkbank.uz/ru/private/remote-banking/mobile-app/",
+    "has": [
+     "5 млн"
+    ]
+   }
   },
   {
    "id": "davr",
@@ -219,7 +255,13 @@
     "title": "abbdavr-bank.uz",
     "url": "https://abbdavr-bank.uz/ru/davr-mobile-2"
    },
-   "checkedAt": "2026-11-24"
+   "checkedAt": "2026-11-24",
+   "watch": {
+    "url": "https://abbdavr-bank.uz/ru/davr-mobile-2",
+    "has": [
+     "3,5 млн"
+    ]
+   }
   },
   {
    "id": "nbu",
@@ -249,7 +291,13 @@
     "title": "nbu.uz",
     "url": "https://nbu.uz/ru/fizicheskim-litsam-tarify"
    },
-   "checkedAt": "2026-11-24"
+   "checkedAt": "2026-11-24",
+   "watch": {
+    "url": "https://nbu.uz/ru/fizicheskim-litsam-tarify",
+    "has": [
+     "3 млн"
+    ]
+   }
   },
   {
    "id": "turon",
@@ -277,7 +325,13 @@
     "title": "turonbank.uz",
     "url": "https://turonbank.uz/ru/private/tariffs/"
    },
-   "checkedAt": "2026-11-24"
+   "checkedAt": "2026-11-24",
+   "watch": {
+    "url": "https://turonbank.uz/ru/private/tariffs/",
+    "has": [
+     "3 млн"
+    ]
+   }
   },
   {
    "id": "humopay",
@@ -337,7 +391,13 @@
     "title": "t.me/Paynetuz_official",
     "url": "https://t.me/Paynetuz_official/3130"
    },
-   "checkedAt": "2026-11-24"
+   "checkedAt": "2026-11-24",
+   "watch": {
+    "url": "https://paynet.uz/ru/questions",
+    "has": [
+     "3 000 000"
+    ]
+   }
   },
   {
    "id": "alif",
@@ -370,7 +430,13 @@
     "title": "alif.uz",
     "url": "https://alif.uz/docs"
    },
-   "checkedAt": "2026-11-24"
+   "checkedAt": "2026-11-24",
+   "watch": {
+    "url": "https://alif.uz/ru",
+    "has": [
+     "1 млн"
+    ]
+   }
   }
  ]
 }

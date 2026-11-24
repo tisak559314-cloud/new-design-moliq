@@ -45,6 +45,9 @@ export default async function transfers(root) {
     return;
   }
   const st = store.p2p, tracker = loadUsed();
+  // акция закончилась — приложение не показываем, пока запись не обновят (tools/refresh.mjs об этом напомнит)
+  const todayIso = new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Tashkent" }).format(new Date());
+  data.apps = data.apps.filter((a) => !a.promoUntil || a.promoUntil >= todayIso);
   const tos = ["uzcard", "humo", "visa"].filter((t) => data.apps.some((a) => a.rules.some((r) => r.to.includes(t))));
   if (!tos.includes(st.to)) st.to = tos[0];
   // «с карты любого банка» — только там, где банк прямо так пишет; по умолчанию показываем все приложения
@@ -68,7 +71,7 @@ export default async function transfers(root) {
     <section class="sec" aria-labelledby="p-t">
       <div class="sec-head"><h2 id="p-t">Где комиссии нет</h2><span class="cap num" id="p-n"></span></div>
       <div class="offers" id="p-list"></div>
-      <p class="cap p2p-note">Банки меняют лимиты без предупреждения — перед переводом посмотрите комиссию в приложении. Тарифы проверены <span class="num">${esc(dateRu(data.checkedAt))}</span>.</p>
+      <p class="cap p2p-note">Банки меняют лимиты без предупреждения — перед переводом посмотрите комиссию в приложении.</p>
     </section>
   </div>`;
 
