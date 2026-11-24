@@ -1,6 +1,6 @@
 // Главная: без приветствия. Сразу дела — кредит, вклад, карта, курс, банкомат.
 import { $, $$, esc, icon, flag, sticker, fmt, fmt2, short, pct, term, plural, moneyInput } from "../lib.js";
-import { db, atms, gold, p2p, stats, fxBest, fxDelta, bankName, LOAN_TYPES } from "../data.js";
+import { db, atmsHome, gold, p2p, stats, fxBest, fxDelta, bankName, LOAN_TYPES } from "../data.js";
 import { store, save, go } from "../store.js";
 import { href } from "../nav.js";
 import { bankLogo, rateRange } from "../app.js";
@@ -103,16 +103,17 @@ export default async function home(root) {
   let mini = null, atmData = null, gone = false;
   const paintCount = () => {
     if (!atmData) return;
-    const n = countAtms(atmData, filterOf());
+    // числа по всей стране посчитаны заранее для каждого сочетания кнопок (atms-home.json); в файле — только центр Ташкента
+    const n = atmData.counts?.[[...mf].sort().join(",")] ?? countAtms(atmData, filterOf());
     const el = $("#map-count", root);
     el.hidden = false;
     el.textContent = `${fmt(n)} ${plural(n, ["банкомат", "банкомата", "банкоматов"])}`;
     $("#map-open", root).setAttribute("href", href(mf.size ? `#/map?f=${[...mf].join(",")}` : "#/map"));
   };
-  atms().then((data) => {
+  atmsHome().then((data) => {
     if (gone) return;
     atmData = data;
-    const total = data.atms.length;
+    const total = data.total ?? data.atms.length;
     $("#atm-n", root).innerHTML = `<b class="num">${fmt(total)}</b> на карте`;
     paintCount();
     const io = new IntersectionObserver((es) => {

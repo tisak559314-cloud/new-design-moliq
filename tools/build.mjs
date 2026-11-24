@@ -27,7 +27,7 @@ const DIST = path.join(ROOT, "dist");
 const SITE = (process.env.SITE_URL || "https://moliq-new-design.livops.app").replace(/\/+$/, "");
 const MANIFEST = "https://zlsr1a9rg6d9gcbj.public.blob.vercel-storage.com/data/manifest.json";
 /** Файлы данных, которые читает сайт (assets/js/data.js) */
-const DATA = ["catalog", "rates", "rates-history", "atms", "gold", "p2p", "complaints"];
+const DATA = ["catalog", "rates", "rates-history", "atms", "atms-home", "gold", "p2p", "complaints"];
 const LOCALE = { ru: "ru_RU", uz: "uz_UZ", en: "en_US" };
 const VIEW_TIMEOUT = 6000;
 
