@@ -4,6 +4,7 @@
  *
  *   node tools/refresh.mjs --from=../moliq/bankmap-next/public/data [--skip=atms.json,rates.json]
  *   node tools/refresh.mjs --from-site=https://moliq.antigradient.uz     то же, но копии качаются с основного сайта
+ *   node tools/refresh.mjs --from-site=… --copy-only     только шаг 1: забрать, что опубликовал основной сайт (несколько раз в день)
  *
  * 1. Каталог, курсы, история курсов и карта — копии данных основного сайта: из его папки (--from, так делает update.sh)
  *    или из опубликованного на нём (--from-site, так делает расписание в GitHub: .github/workflows/data.yml).
@@ -145,11 +146,13 @@ function complaints() {
 }
 
 await copyData();
-console.log("Новый сайт · золото");
-gold();
-console.log("Новый сайт · переводы без комиссии");
-try { await p2p(); } catch (e) { warn(`переводы не проверены: ${e.message}`); }
-console.log("Новый сайт · индекс жалоб ЦБ");
-try { complaints(); } catch (e) { warn(`индекс жалоб не проверен: ${e.message}`); }
+if (!process.argv.includes("--copy-only")) {
+  console.log("Новый сайт · золото");
+  gold();
+  console.log("Новый сайт · переводы без комиссии");
+  try { await p2p(); } catch (e) { warn(`переводы не проверены: ${e.message}`); }
+  console.log("Новый сайт · индекс жалоб ЦБ");
+  try { complaints(); } catch (e) { warn(`индекс жалоб не проверен: ${e.message}`); }
+}
 console.log(warnings.length ? `Новый сайт: готово, предупреждений ${warnings.length}` : "Новый сайт: готово, всё в порядке");
 process.exit(failed ? 1 : 0);
