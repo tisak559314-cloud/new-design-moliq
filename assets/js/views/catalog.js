@@ -81,8 +81,12 @@ export default async function catalog(root, { section, path, query }) {
       const a = store.loan.amount, m = store.loan.term, range = x.rateLo !== x.rateHi;
       const rate = ["Ставка", x.rateLo == null ? "По запросу" : rateRange(x)];
       if (a && m && x.rateHi != null) {
-        const pay = annuity(a, x.rateHi, m);
-        return [rate, [range ? "Платёж до" : "Платёж в месяц", `${fmt(pay)} сум`], [range ? "Переплата до" : "Переплата", `${fmt(pay * m - a)} сум`]];
+        // убывающие платежи: долг гасится равными частями, проценты — на остаток; первый платёж самый большой
+        const diff = store.loan.method === "diff", r = x.rateHi / 1200;
+        const pay = diff ? a / m + a * r : annuity(a, x.rateHi, m);
+        const over = diff ? (a * r * (m + 1)) / 2 : pay * m - a;
+        const payName = diff ? (range ? "Первый платёж до" : "Первый платёж") : range ? "Платёж до" : "Платёж в месяц";
+        return [rate, [payName, `${fmt(pay)} сум`], [range ? "Переплата до" : "Переплата", `${fmt(over)} сум`]];
       }
       return [rate, ["Сумма", x.max ? `до ${short(x.max)}` : x.min ? `от ${short(x.min)}` : "—"], ["Срок", x.termHi ? (x.termLo === x.termHi ? term(x.termHi) : `до ${term(x.termHi)}`) : "—"]];
     }
@@ -191,6 +195,7 @@ export default async function catalog(root, { section, path, query }) {
     </div>
     <div class="offers" id="list"></div>
     <button class="btn btn-line more-btn" id="more" hidden>Показать ещё</button>
+    <p class="cap list-note" id="note" hidden></p>
   </div>`;
 
   // ── Сумма и срок ──
@@ -205,7 +210,10 @@ export default async function catalog(root, { section, path, query }) {
         <label class="field has-suffix"><span>Сколько вам нужно</span><input id="amount" inputmode="numeric" placeholder="Например, ${fmt(LOAN_SUMS[type][2])}" autocomplete="off"><i class="suffix">сум</i></label>
         <div class="ctl-presets" role="group" aria-label="Готовые суммы">${LOAN_SUMS[type].map((v) => `<button class="chip chip-soft" data-amount="${v}" aria-pressed="${st.amount === v}">${short(v)}</button>`).join("")}</div>
       </div>
-      <div class="ctl-presets" role="group" aria-label="Срок"><span class="cap">Срок</span>${terms.map((m) => `<button class="chip chip-soft" data-term="${m}" aria-pressed="${st.term === m}">${term(m)}</button>`).join("")}</div>`;
+      <div class="ctl-row ctl-split">
+        <div class="ctl-presets" role="group" aria-label="Срок"><span class="cap">Срок</span>${terms.map((m) => `<button class="chip chip-soft" data-term="${m}" aria-pressed="${st.term === m}">${term(m)}</button>`).join("")}</div>
+        <div class="ctl-presets" role="group" aria-label="Платежи"><span class="cap">Платежи</span>${[["ann", "Равные"], ["diff", "Убывающие"]].map(([id, n]) => `<button class="chip chip-soft" data-method="${id}" aria-pressed="${(st.method || "ann") === id}">${n}</button>`).join("")}</div>
+      </div>`;
       amountCtl = moneyInput($("#amount", ctl), (n) => { st.amount = n; save(); syncPresets(); paintList(); });
       amountCtl.set(st.amount);
     } else {
@@ -227,6 +235,18 @@ export default async function catalog(root, { section, path, query }) {
   }
 
   // ── Список ──
+  // Гарантия вкладов: закон ЗРУ-1031 от 18.02.2025 — до 200 млн сум на одного вкладчика в одном банке,
+  // валютные вклады возмещаются в сумах по курсу ЦБ (nbu.uz, «Гарантирование вкладов»)
+  const GUARANTEE = 200_000_000;
+  function noteText(total) {
+    if (!total) return "";
+    if (K === "credits" && store.loan.amount && store.loan.term) return "Без страховки и комиссий банка — полную стоимость кредита банк покажет до подписания договора.";
+    if (K === "deposits" && store.dep.amount) {
+      const inSum = store.dep.cur === "UZS" ? store.dep.amount : store.dep.amount * (db.rates?.cbu?.[store.dep.cur] || 0);
+      if (inSum > GUARANTEE) return "Государство гарантирует вклады до 200 млн сум в одном банке — большую сумму надёжнее разделить между банками.";
+    }
+    return "";
+  }
   function paintList() {
     const { total, groups: gs } = groups();
     if (focusId) {
@@ -242,6 +262,10 @@ export default async function catalog(root, { section, path, query }) {
       const leadIdx = f.sort !== "rate" || K === "cards" || f.flags.has("targeted") ? -1 : gs.findIndex((g) => (K === "credits" ? !g[0].targeted && g[0].rateHi != null : g[0].rate != null));
       list.innerHTML = gs.slice(0, shown).map((g, i) => card(g, i === leadIdx)).join("");
     }
+    // одна строка под списком — только когда на экране есть наш расчёт или сумма вклада больше гарантии
+    const note = $("#note", root);
+    note.textContent = noteText(total);
+    note.hidden = !note.textContent;
     const more = $("#more", root);
     more.hidden = gs.length <= shown;
     if (!more.hidden) more.textContent = `Показать ещё ${Math.min(PAGE, gs.length - shown)} из ${gs.length - shown}`;
@@ -255,6 +279,7 @@ export default async function catalog(root, { section, path, query }) {
     const d = b.dataset;
     if (d.amount) { const st = K === "credits" ? store.loan : store.dep; const v = Number(d.amount); st.amount = st.amount === v ? null : v; save(); amountCtl?.set(st.amount); syncPresets(); }
     else if (d.term) { const v = Number(d.term); store.loan.term = store.loan.term === v ? null : v; save(); $$("[data-term]", root).forEach((x) => x.setAttribute("aria-pressed", String(Number(x.dataset.term) === store.loan.term))); }
+    else if (d.method) { store.loan.method = d.method; save(); $$("[data-method]", root).forEach((x) => x.setAttribute("aria-pressed", String(x === b))); }
     else if (d.termb) { f.termB = d.termb; $$("[data-termb]", root).forEach((x) => x.setAttribute("aria-pressed", String(x === b))); paintChips(); }
     else if (d.cur) { store.dep.cur = d.cur; store.dep.amount = null; save(); $$("[data-cur]", root).forEach((x) => x.setAttribute("aria-pressed", String(x === b))); paintCtl(); }
     else if (d.flag) { f.flags.has(d.flag) ? f.flags.delete(d.flag) : f.flags.add(d.flag); paintChips(); }

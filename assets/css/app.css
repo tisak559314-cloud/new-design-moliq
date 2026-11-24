@@ -118,6 +118,7 @@ h3, .h3 { font-size: 20px; line-height: 1.25; font-weight: 600; letter-spacing: 
 .tag-lime { background: var(--lime); color: var(--ink); font-weight: 600; }
 .tag-green { background: var(--green-soft); color: var(--green); }
 .tag-blue { background: var(--blue-soft); color: var(--blue); }
+.tag-amber { background: var(--amber-soft); color: var(--amber); }
 
 .card { background: var(--surface); border-radius: var(--r-l); padding: 24px; }
 .sec { margin-top: 56px; }
@@ -230,6 +231,8 @@ h3, .h3 { font-size: 20px; line-height: 1.25; font-weight: 600; letter-spacing: 
 .ctl-row.two { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); }
 .ctl-presets { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .ctl-presets .cap { margin-right: 4px; }
+.ctl-split { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px 24px; }
+.list-note { margin-top: 16px; text-align: center; text-wrap: pretty; }
 .bar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 20px 0 14px; }
 .bar .chips { flex: 1; min-width: 0; }
 .bar-r { display: flex; align-items: center; gap: 12px; margin-left: auto; }

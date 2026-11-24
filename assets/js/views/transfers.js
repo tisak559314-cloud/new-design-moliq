@@ -1,5 +1,5 @@
 // Переводы с карты на карту без комиссии: где лимит больше, как разбить сумму и сколько лимита у вас осталось.
-import { $, $$, esc, safeUrl, icon, fmt, short, pct, moneyInput } from "../lib.js";
+import { $, $$, esc, safeUrl, icon, fmt, short, pct, plural, moneyInput } from "../lib.js";
 import { p2p as loadP2p, db } from "../data.js";
 import { store, save } from "../store.js";
 import { bankLogo, dateRu } from "../app.js";
@@ -19,20 +19,24 @@ const saveUsed = (st) => { try { localStorage.setItem(KEY, JSON.stringify(st)); 
 /**
  * Как перевести amount: сначала приложения с самым большим остатком лимита (так частей меньше всего),
  * остаток сверх лимитов — там, где комиссия после лимита ниже.
+ * Необязательные поля правила: perTransfer — больше этого за один перевод нельзя (часть делится на несколько
+ * переводов, count), feeOnFull — сверх лимита комиссия берётся со всего перевода, а не только с превышения:
+ * поэтому платную часть шлём отдельным переводом, а бесплатную — ровно до остатка лимита.
  */
 export function plan(rows, amount) {
   const steps = [];
+  const times = (r, part) => (r.rule.perTransfer > 0 ? Math.ceil(part / r.rule.perTransfer) : 1);
   let left = amount;
   for (const r of [...rows].sort((a, b) => b.free - a.free)) {
     if (left <= 0) break;
     if (r.free <= 0) continue;
     const part = Math.min(r.free, left);
-    steps.push({ row: r, part, fee: 0 });
+    steps.push({ row: r, part, fee: 0, count: times(r, part) });
     left -= part;
   }
   if (left > 0) {
     const paid = rows.filter((r) => r.rule.feeAfter != null).sort((a, b) => a.rule.feeAfter - b.rule.feeAfter)[0];
-    if (paid) { steps.push({ row: paid, part: left, fee: Math.round((left * paid.rule.feeAfter) / 100), pct: paid.rule.feeAfter }); left = 0; }
+    if (paid) { steps.push({ row: paid, part: left, fee: Math.round((left * paid.rule.feeAfter) / 100), pct: paid.rule.feeAfter, count: times(paid, left) }); left = 0; }
   }
   return { steps, left, fee: steps.reduce((s, x) => s + x.fee, 0) };
 }
@@ -45,7 +49,7 @@ export default async function transfers(root) {
     return;
   }
   const st = store.p2p, tracker = loadUsed();
-  // акция закончилась — приложение не показываем, пока запись не обновят (tools/refresh.mjs об этом напомнит)
+  // акция закончилась — приложение не показываем, пока запись не обновят (moliq: import-p2p.mjs об этом напомнит)
   const todayIso = new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Tashkent" }).format(new Date());
   data.apps = data.apps.filter((a) => !a.promoUntil || a.promoUntil >= todayIso);
   const tos = ["uzcard", "humo", "visa"].filter((t) => data.apps.some((a) => a.rules.some((r) => r.to.includes(t))));
@@ -101,6 +105,7 @@ export default async function transfers(root) {
       </div>
       <ol class="p2p-steps">${p.steps.map((s) => `<li>${logoSm(s.row.app)}<b>${esc(s.row.app.app)}</b>
         <span class="p2p-part num">${fmt(s.part)} сум</span>
+        ${s.count > 1 ? `<span class="tag num">${s.count} ${plural(s.count, ["перевод", "перевода", "переводов"])} по ${short(s.row.rule.perTransfer)}</span>` : ""}
         ${s.fee ? `<span class="tag num">${s.row.rule.feeUpTo ? "до " : ""}${pct(s.pct)} · ${fmt(s.fee)} сум</span>` : `<span class="tag tag-green num">0%</span>`}</li>`).join("")}
         ${p.left > 0 ? `<li class="p2p-rest"><span>Остаток</span><span class="p2p-part num">${fmt(p.left)} сум</span><span class="tag">с комиссией</span></li>` : ""}</ol>
       ${saved > 0 ? `<p class="cap">Сравниваем с комиссией <span class="num">${pct(data.baseline.pct)}</span> — ${esc(data.baseline.label)}.</p>` : ""}
@@ -112,6 +117,8 @@ export default async function transfers(root) {
       a.ownCard && `<span class="tag">Нужна карта банка</span>`,
       ...(a.needs || []).map((n) => `<span class="tag">${esc(n)}</span>`),
       a.promoUntil && `<span class="tag tag-blue">Акция до <span class="num">${esc(dateRu(a.promoUntil))}</span></span>`,
+      r.rule.perTransfer > 0 && `<span class="tag">За один перевод до <span class="num">${short(r.rule.perTransfer)}</span></span>`,
+      r.rule.feeOnFull && `<span class="tag tag-amber">Сверх лимита — комиссия со всей суммы перевода</span>`,
     ].filter(Boolean).join("");
     const usedBar = r.used ? `<div class="p2p-used"><span class="idx-bar" aria-hidden="true"><i style="width:${Math.min(100, Math.round((r.used / r.rule.limit) * 100))}%"></i></span>
         <span class="cap num">Осталось ${short(r.free)} из ${short(r.rule.limit)}</span><button class="chip-reset" data-reset="${a.id}">Сбросить</button></div>` : "";

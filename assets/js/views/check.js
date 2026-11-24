@@ -50,8 +50,8 @@ export default async function check(root, { query }) {
           ${field("income", "Доход в месяц", "8 000 000", ADD_PAY)}
         </section>
         <section class="q" id="q-other">
-          <h2 class="q-t"><i>3</i>Другие кредиты</h2>
-          <div class="seg" role="group" aria-label="Есть ли другие кредиты"><button data-has="0" aria-pressed="${!c.has}">Нет</button><button data-has="1" aria-pressed="${!!c.has}">Есть</button></div>
+          <h2 class="q-t"><i>3</i>Кредиты и рассрочки</h2>
+          <div class="seg" role="group" aria-label="Есть ли кредиты или рассрочки"><button data-has="0" aria-pressed="${!c.has}">Нет</button><button data-has="1" aria-pressed="${!!c.has}">Есть</button></div>
           <div id="other-box"${c.has ? "" : " hidden"} style="margin-top:12px">${field("other", "Плачу по ним в месяц", "1 000 000", ADD_PAY.slice(0, 2))}</div>
         </section>
         <section class="q" id="q-loan">
@@ -122,7 +122,7 @@ export default async function check(root, { query }) {
       const tight = rows.every((r) => !r.calm), none = rows.every((r) => !r.top);
       if (none) {
         out.className = "card verdict bad";
-        out.innerHTML = `<div class="verdict-t">Новый кредит сейчас не по силам</div><p class="muted">${other ? `Другие кредиты уже забирают ${Math.round((other / income) * 100)}% дохода.` : "Дохода не хватает даже на самый маленький платёж."}</p>${note}`;
+        out.innerHTML = `<div class="verdict-t">Новый кредит сейчас не по силам</div><p class="muted">${other ? `Кредиты и рассрочки уже забирают ${Math.round((other / income) * 100)}% дохода.` : "Дохода не хватает даже на самый маленький платёж."}</p>${note}`;
         peek = "Не по силам";
       } else {
         const best = rows[rows.length - 1];
@@ -163,7 +163,7 @@ export default async function check(root, { query }) {
           <div class="meter-scale num"><span style="left:0">0%</span><span style="left:35%">35%</span><span style="left:50%">50%</span><span style="left:100%">100%</span></div></div>
         <div class="lines num">
           <div><span>Доход в месяц</span><span>${fmt(income)} сум</span></div>
-          ${other ? `<div><span>Платежи по другим кредитам</span><span>− ${fmt(other)} сум</span></div>` : ""}
+          ${other ? `<div><span>Кредиты и рассрочки</span><span>− ${fmt(other)} сум</span></div>` : ""}
           <div><span>Платёж за ${short(amount)} на ${term(months)}</span><span>− ${fmt(pay)} сум</span></div>
           <div><span>Останется на жизнь</span><span>${fmt(income - other - pay)} сум</span></div>
         </div>
