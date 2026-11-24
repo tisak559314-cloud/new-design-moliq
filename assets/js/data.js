@@ -1,8 +1,23 @@
-// Данные сайта: каталог (кредиты, вклады, карты) и курсы банков — с Bank.uz, курс ЦБ — cbu.uz, банкоматы. Снимок от даты fetchedAt.
+// Данные сайта: каталог (кредиты, вклады, карты) и курсы банков — с Bank.uz, курс ЦБ — cbu.uz, банкоматы, золото, переводы.
+//
+// Откуда. Данные публикует moliq/scripts/update.sh (и расписание в GitHub) в хранилище: каждый файл лежит под адресом
+// с хешем содержимого, а манифест — список актуальных адресов — по постоянному адресу MANIFEST. Сайт читает манифест
+// при каждом заходе, поэтому новые данные видны через несколько секунд после публикации, без пересборки сайта.
+// Хранилище не ответило — берём копию из папки data/ рядом с сайтом.
 import { median } from "./lib.js";
 
+export const MANIFEST = "https://zlsr1a9rg6d9gcbj.public.blob.vercel-storage.com/data/manifest.json";
+let manifestReq;
+/** Манифест данных или null (хранилище недоступно) */
+const manifest = () => (manifestReq ??= fetch(MANIFEST, { cache: "no-cache" }).then((r) => (r.ok ? r.json() : null)).catch(() => null));
+const getJson = (url, name) => fetch(url).then((r) => { if (!r.ok) throw new Error(`${name}: ${r.status}`); return r.json(); });
+
 const cache = {};
-const load = (name) => (cache[name] ??= fetch(`data/${name}.json`).then((r) => { if (!r.ok) throw new Error(`${name}: ${r.status}`); return r.json(); }));
+const load = (name) => (cache[name] ??= manifest().then((m) => {
+  const url = m?.files?.[`${name}.json`]?.url;
+  const local = () => getJson(`data/${name}.json`, name);
+  return url ? getJson(url, name).catch(local) : local();
+}));
 
 export const LOAN_TYPES = [
   { id: "micro", name: "Микрозайм", many: "Микрозаймы", maxTerm: 36 },
