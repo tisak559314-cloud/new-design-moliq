@@ -628,6 +628,8 @@ h3, .h3 { font-size: 20px; line-height: 1.25; font-weight: 600; letter-spacing: 
 .g-facts .kv .v { font-size: 22px; letter-spacing: -.02em; }
 .g-region { height: 48px; min-width: 240px; background: var(--surface); }
 .g-stock { margin-top: 16px; }
+.g-map { height: 300px; margin-top: 16px; border-radius: var(--r-l); overflow: hidden; background: var(--soft-2); }
+@media (max-width: 640px) { .g-map { height: 240px; } }
 /* последняя колонка — фиксированной ширины: у каждой строки своя сетка, и с auto шапка (без ссылки) съезжала относительно чисел */
 .g-row { display: grid; grid-template-columns: minmax(220px, 1.8fr) repeat(5, minmax(52px, .55fr)) 148px; gap: 16px; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--line); }
 .g-row:last-child { border-bottom: 0; }

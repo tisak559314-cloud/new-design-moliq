@@ -96,7 +96,7 @@ const D = {
   "Дохода не хватает даже на самый маленький платёж.": ["Daromad eng kichik toʻlovga ham yetmaydi.", "Income does not cover even the smallest payment."],
   "Впритык": ["Zoʻrgʻa", "Tight"], "Тяжело": ["Ogʻir", "Too heavy"], "Не по силам": ["Qurb yetmaydi", "Not affordable"],
   // карта
-  "Загружаем банкоматы…": ["Bankomatlar yuklanmoqda…", "Loading ATMs…"], "Рядом со мной": ["Yonimda", "Near me"], "Маршрут": ["Yoʻnalish", "Directions"], "Карта банкоматов": ["Bankomatlar xaritasi", "ATM map"],
+  "Загружаем банкоматы…": ["Bankomatlar yuklanmoqda…", "Loading ATMs…"], "Рядом со мной": ["Yonimda", "Near me"], "Маршрут": ["Yoʻnalish", "Directions"], "Отделения со слитками на карте": ["Quymalar bor boʻlimlar xaritada", "Branches with gold bars on the map"], "Карта банкоматов": ["Bankomatlar xaritasi", "ATM map"],
   "Здесь таких банкоматов нет": ["Bu yerda bunday bankomat yoʻq", "No such ATMs here"], "Отодвиньте карту или уберите фильтр": ["Xaritani suring yoki filtrni olib tashlang", "Move the map or remove a filter"],
   "Карта не загрузилась — проверьте интернет": ["Xarita yuklanmadi — internetni tekshiring", "The map did not load — check your connection"], "Браузер не даёт геопозицию": ["Brauzer joylashuvni bermayapti", "The browser does not provide your location"],
   "Разрешите доступ к геопозиции в браузере": ["Brauzerda joylashuvga ruxsat bering", "Allow location access in the browser"], "Не удалось загрузить банкоматы. Обновите страницу.": ["Bankomatlar yuklanmadi. Sahifani yangilang.", "ATMs did not load. Refresh the page."],

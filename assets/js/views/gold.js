@@ -6,6 +6,7 @@ import { bankLogo, dateRu } from "../app.js";
 import { chartHtml, bindChart } from "../chart.js";
 import { fxSeg } from "./rates.js";
 import { tr } from "../i18n.js";
+import { atmMap, yandexRoute } from "../mapkit.js";
 
 const TASHKENT = "город Ташкент";
 /** «2026-11-24T09:52» → «24.11.2026, 09:52» */
@@ -49,6 +50,7 @@ export default async function goldView(root) {
         <label class="field select g-region"><span class="sr">Область</span><select id="g-region">${regions.map((r) => `<option value="${esc(r)}">${esc(r)}</option>`).join("")}</select></label>
       </div>
       <div class="chips" id="g-w"><button class="chip chip-soft" data-w="0" aria-pressed="true">Любой вес</button>${W.map((w) => `<button class="chip chip-soft" data-w="${w}" aria-pressed="false">${w} г</button>`).join("")}</div>
+      <div class="g-map" id="g-map" hidden aria-label="Отделения со слитками на карте"></div>
       <div class="tbl g-stock" id="g-stock"></div>
       <p class="cap g-src">Остатки на <span class="num">${esc(stamp(data.stockAt))}</span> · <a class="link" href="${esc(data.stockUrl)}" target="_blank" rel="noopener">Центральный банк</a></p>
     </section>
@@ -95,13 +97,51 @@ export default async function goldView(root) {
     const headRow = `<div class="g-row g-head"><div>Отделение</div>${W.map((w) => `<div class="g-n num">${w} г</div>`).join("")}<div></div></div>`;
     $("#g-stock", root).innerHTML = rows.length ? headRow + rows.map((s) => {
       const name = db.bank[s.bankId]?.name || s.bank;
-      const find = `https://yandex.uz/maps/?text=${encodeURIComponent(`${name} ${s.branch} ${s.region}`)}`;
+      // отделение нашлось на нашей карте — сразу маршрут в Яндекс Картах; нет — поиск по названию
+      const link = s.lat != null
+        ? `<a class="link g-find" href="${esc(yandexRoute(s.lat, s.lng))}" target="_blank" rel="noopener" aria-label="Маршрут">${icon("route", "ic-s")}<span>Маршрут</span></a>`
+        : `<a class="link g-find" href="${esc(`https://yandex.uz/maps/?text=${encodeURIComponent(`${name} ${s.branch} ${s.region}`)}`)}" target="_blank" rel="noopener" aria-label="Найти на карте">${icon("pin", "ic-s")}<span>Найти на карте</span></a>`;
       return `<div class="g-row">
         <div class="tbl-bank">${bankLogo(s.bankId, "sm")}<div class="g-name"><b>${esc(name)}</b><span>${esc(s.branch)}</span></div></div>
         ${W.map((w, k) => `<div class="g-n${w === weight ? " on" : ""}${s.n[k] ? "" : " none"}"><span class="g-w num">${w} г</span><b class="num">${s.n[k] || "—"}</b></div>`).join("")}
-        <a class="link g-find" href="${esc(find)}" target="_blank" rel="noopener" aria-label="Найти на карте">${icon("pin", "ic-s")}<span>Найти на карте</span></a>
+        ${link}
       </div>`;
     }).join("") : `<div class="empty"><b>Таких слитков здесь сегодня нет</b><span class="muted small">Выберите другой вес или область</span></div>`;
+    paintMap(rows.filter((s) => s.lat != null));
+  }
+
+  // ── Карта отделений со слитками: те же строки, что в таблице; грузится, только когда до неё докрутили ──
+  const geo = { banks: db.banks, atms: [] };
+  const bankIdx = new Map(db.banks.map((b, i) => [b.id, i]));
+  let gmap = null, gmapReq = null, gone = false;
+  function fit() {
+    if (!gmap || !geo.atms.length) return;
+    gmap.setFilter({});
+    const b = new gmap.gl.LngLatBounds();
+    for (const a of geo.atms) b.extend([a[3], a[2]]);
+    gmap.map.fitBounds(b, { padding: 48, maxZoom: 14, duration: 0 });
+  }
+  function paintMap(located) {
+    const el = $("#g-map", root);
+    geo.atms = located.filter((s) => bankIdx.has(s.bankId)).map((s, i) => [i + 1, bankIdx.get(s.bankId), s.lat, s.lng, s.place || s.branch, -1, 1, 0]);
+    el.hidden = !geo.atms.length;
+    if (!geo.atms.length) return;
+    if (gmap) return fit();
+    if (gmapReq) return;
+    const io = new IntersectionObserver((es) => {
+      if (!es.some((e) => e.isIntersecting)) return;
+      io.disconnect();
+      gmapReq = atmMap(el, geo, { zoom: 10 }).then((m) => {
+        if (gone) return m.remove();
+        gmap = m;
+        // отделений на карте десятки, а не тысячи банкоматов — точки крупнее, их видно на обзоре области
+        m.map.setPaintProperty("atm-dots", "circle-radius", ["interpolate", ["linear"], ["zoom"], 6, 5, 12, 7]);
+        m.map.setPaintProperty("atm-dots", "circle-stroke-width", 2);
+        fit();
+      }).catch(() => { el.hidden = true; });
+    }, { rootMargin: "200px" });
+    io.observe(el);
+    gmapReq = true;
   }
 
   moneyInput($("#g-paid", root), (n) => { paid = n; store.gold.paid = n; save(); paintMine(); }).set(paid);
@@ -112,4 +152,5 @@ export default async function goldView(root) {
     else if (b?.dataset.w != null) { weight = Number(b.dataset.w); $$("[data-w]", root).forEach((x) => x.setAttribute("aria-pressed", String(x === b))); paintStock(); }
   });
   paintHero(); paintMine(); paintStock();
+  return () => { gone = true; gmap?.remove(); };
 }
