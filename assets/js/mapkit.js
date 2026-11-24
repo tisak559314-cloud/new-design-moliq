@@ -116,7 +116,7 @@ export async function atmMap(el, data, opts = {}) {
   // значки банков догружаются, точки видны сразу
   data.banks.forEach(async (b, i) => {
     if (!b.icon) return;
-    const px = await bankPin(`assets/banks/${b.icon}`);
+    const px = await bankPin(`/assets/banks/${b.icon}`);
     if (px && map.getStyle() && !map.hasImage(`b-${i}`)) map.addImage(`b-${i}`, px, { pixelRatio: 2 });
   });
   if (opts.onPick) {

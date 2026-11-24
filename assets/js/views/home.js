@@ -2,6 +2,7 @@
 import { $, $$, esc, icon, flag, sticker, fmt, fmt2, short, pct, term, plural, moneyInput } from "../lib.js";
 import { db, atms, gold, p2p, stats, fxBest, fxDelta, bankName, LOAN_TYPES } from "../data.js";
 import { store, save, go } from "../store.js";
+import { href } from "../nav.js";
 import { bankLogo, rateRange } from "../app.js";
 import { atmMap, countAtms } from "../mapkit.js";
 
@@ -106,7 +107,7 @@ export default async function home(root) {
     const el = $("#map-count", root);
     el.hidden = false;
     el.textContent = `${fmt(n)} ${plural(n, ["банкомат", "банкомата", "банкоматов"])}`;
-    $("#map-open", root).href = mf.size ? `#/map?f=${[...mf].join(",")}` : "#/map";
+    $("#map-open", root).setAttribute("href", href(mf.size ? `#/map?f=${[...mf].join(",")}` : "#/map"));
   };
   atms().then((data) => {
     if (gone) return;
@@ -126,11 +127,12 @@ export default async function home(root) {
   p2p().then((d) => {
     // лимит, который годится для любой пары карт Uzcard и Humo (а не только Humo → Humo, где он в десять раз больше)
     const top = Math.max(0, ...d.apps.filter((a) => !a.ownCard).flatMap((a) => a.rules.filter((r) => r.from.length > 1 && r.to.length > 1).map((r) => r.limit)));
-    if (!gone && top) $("#p2p-h", root).innerHTML = `<span>до</span> <b class="num">${short(top)}</b> <span>в месяц в одном приложении</span>`;
+    // элемент заменяется целиком: так переводчик видит новую подсказку и подставляет её шаблон на нужном языке
+    if (!gone && top) $("#p2p-h", root).outerHTML = `<p class="tile-h" id="p2p-h" data-i18n="hint-p2p">до <b class="num">${short(top)}</b> в месяц в одном приложении</p>`;
   }).catch(() => {});
   gold().then((d) => {
     const bar = d.bars[0];
-    if (!gone && bar) $("#gold-h", root).innerHTML = `<span>Слиток</span> <span class="num">${bar.g} г</span> — <b class="num">${fmt(bar.sell)}</b> сум`;
+    if (!gone && bar) $("#gold-h", root).outerHTML = `<p class="tile-h" id="gold-h" data-i18n="hint-gold">Слиток <b class="num">${bar.g}</b> г — <b class="num">${fmt(bar.sell)}</b> сум</p>`;
   }).catch(() => {});
 
   // ── События ──

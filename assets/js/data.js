@@ -13,9 +13,10 @@ const manifest = () => (manifestReq ??= fetch(MANIFEST, { cache: "no-cache" }).t
 const getJson = (url, name) => fetch(url).then((r) => { if (!r.ok) throw new Error(`${name}: ${r.status}`); return r.json(); });
 
 const cache = {};
-const load = (name) => (cache[name] ??= manifest().then((m) => {
+// при сборке (tools/build.mjs) данные уже скачаны и лежат в globalThis.__MOLIQ_DATA__ — страницы рисуются из них
+const load = (name) => (cache[name] ??= globalThis.__MOLIQ_DATA__?.[name] ? Promise.resolve(globalThis.__MOLIQ_DATA__[name]) : manifest().then((m) => {
   const url = m?.files?.[`${name}.json`]?.url;
-  const local = () => getJson(`data/${name}.json`, name);
+  const local = () => getJson(`/data/${name}.json`, name);
   return url ? getJson(url, name).catch(local) : local();
 }));
 

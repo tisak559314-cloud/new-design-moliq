@@ -5,6 +5,8 @@
 
 Сайт: https://moliq-new-design.livops.app — выкладывается сам при каждом пуше в main.
 
+Подробно о каждой странице, файлах данных и обновлении — в [work.md](work.md).
+
 ## Запуск
 
     python3 serve.py

@@ -91,7 +91,7 @@ const D = {
   "Нажмите на срок — проверим эту сумму.": ["Muddatni bosing — shu summani tekshiramiz.", "Tap a term and we’ll check that amount."],
   "Новый кредит сейчас не по силам": ["Hozir yangi kreditga qurbingiz yetmaydi", "A new loan is not affordable right now"],
   "Дохода не хватает даже на самый маленький платёж.": ["Daromad eng kichik toʻlovga ham yetmaydi.", "Income does not cover even the smallest payment."],
-  "Впритык": ["Zoʻrgʻa", "Tight"], "Тяжело": ["Ogʻir", "Too heavy"], "Не по силам": ["Qurb yetmaydi", "Not affordable"], "Выберите срок": ["Muddatni tanlang", "Choose a term"],
+  "Впритык": ["Zoʻrgʻa", "Tight"], "Тяжело": ["Ogʻir", "Too heavy"], "Не по силам": ["Qurb yetmaydi", "Not affordable"],
   // карта
   "Загружаем банкоматы…": ["Bankomatlar yuklanmoqda…", "Loading ATMs…"], "Рядом со мной": ["Yonimda", "Near me"], "Маршрут": ["Yoʻnalish", "Directions"], "Карта банкоматов": ["Bankomatlar xaritasi", "ATM map"],
   "Здесь таких банкоматов нет": ["Bu yerda bunday bankomat yoʻq", "No such ATMs here"], "Отодвиньте карту или уберите фильтр": ["Xaritani suring yoki filtrni olib tashlang", "Move the map or remove a filter"],
@@ -143,6 +143,8 @@ const D = {
   "Самаркандская область": ["Samarqand viloyati", "Samarkand region"], "Сырдарьинская область": ["Sirdaryo viloyati", "Syrdarya region"], "Сурхандарьинская область": ["Surxondaryo viloyati", "Surkhandarya region"],
   "Ферганская область": ["Fargʻona viloyati", "Fergana region"], "Хорезмская область": ["Xorazm viloyati", "Khorezm region"],
   // индекс жалоб
+  "Страница не найдена": ["Sahifa topilmadi", "Page not found"], "Возможно, ссылка устарела": ["Havola eskirgan boʻlishi mumkin", "The link may be out of date"],
+  "На главную": ["Bosh sahifaga", "Go to home"], "Проверьте интернет и обновите страницу.": ["Internetni tekshiring va sahifani yangilang.", "Check your connection and reload the page."],
   "Отделение": ["Boʻlim", "Branch"],
   "Раздел": ["Boʻlim", "Section"], "Индекс жалоб": ["Shikoyatlar indeksi", "Complaint index"], "Индекс жалоб ЦБ": ["MB shikoyatlar indeksi", "CB complaint index"], "Выше 1": ["1 dan yuqori", "Above 1"],
   "— на банк жалуются чаще, чем у него клиентов": ["— bank ustidan shikoyatlar ulushi mijozlari ulushidan katta", "— the bank’s share of complaints exceeds its share of customers"], "новый в списке": ["roʻyxatda yangi", "new in the list"],
@@ -154,6 +156,8 @@ const D = {
 const E = {
   "hint-loans": ["{0} ta taklif, {1} ta bank", "{0} offers from {1} banks"],
   "hint-dep": ["yillik {0} gacha", "up to {0} a year"],
+  "hint-p2p": ["bitta ilovada oyiga {0} gacha", "up to {0} a month in one app"],
+  "hint-gold": ["{0} g quyma — {1} soʻm", "A {0} g bar — {1} UZS"],
 };
 
 const UNITS = [
@@ -258,11 +262,13 @@ const ATTRS = ["placeholder", "aria-label"];
 function walk(node) {
   if (node.nodeType === 3) { const v = tr(node.nodeValue); if (v !== node.nodeValue) node.nodeValue = v; return; }
   if (node.nodeType !== 1 || node.tagName === "SCRIPT" || node.tagName === "STYLE") return;
-  const key = node.dataset?.i18n;
+  // атрибут читаем напрямую, а не через dataset: так работает и при сборке страниц (linkedom путает «i18n» с цифрами)
+  const key = node.getAttribute("data-i18n");
   if (key && E[key]) {
-    if (node.dataset.i18nDone !== lang) {
-      const parts = [...node.querySelectorAll("b")].map((b) => b.outerHTML);
-      node.dataset.i18nDone = lang;
+    if (node.getAttribute("data-i18n-done") !== lang) {
+      // числа с единицами внутри <b> («10 млн») переводим до подстановки в шаблон
+      const parts = [...node.querySelectorAll("b")].map((b) => { for (const c of b.childNodes) walk(c); return b.outerHTML; });
+      node.setAttribute("data-i18n-done", lang);
       node.innerHTML = E[key][idx()].replace(/\{(\d)\}/g, (_, i) => parts[+i] || "");
     }
     return;
@@ -272,6 +278,11 @@ function walk(node) {
 }
 
 /** Включить язык: ru — как в шаблонах; uz и en — словарь поверх готовой страницы */
+/** Перевести готовый узел на текущий язык (для сборки страниц: там нет наблюдателя за изменениями) */
+export const translateTree = (node) => { if (lang !== "ru") walk(node); };
+
+const OPTS = { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ATTRS };
+/** Включить язык: ru — как в шаблонах; uz и en — словарь поверх готовой страницы */
 export function setLang(next) {
   lang = ["uz", "en"].includes(next) ? next : "ru";
   document.documentElement.lang = lang;
@@ -279,12 +290,17 @@ export function setLang(next) {
   observer = null;
   if (lang === "ru") return;
   walk(document.body);
+  if (typeof MutationObserver !== "function") return;
   observer = new MutationObserver((list) => {
-    for (const m of list) {
-      if (m.type === "characterData") walk(m.target);
-      else if (m.type === "attributes") { const v = tr(m.target.getAttribute(m.attributeName)); if (v != null && v !== m.target.getAttribute(m.attributeName)) m.target.setAttribute(m.attributeName, v); }
-      else for (const n of m.addedNodes) walk(n);
-    }
+    // свой перевод не должен снова будить наблюдателя: отключаемся на время правок
+    observer.disconnect();
+    try {
+      for (const m of list) {
+        if (m.type === "characterData") walk(m.target);
+        else if (m.type === "attributes") { const v = tr(m.target.getAttribute(m.attributeName)); if (v != null && v !== m.target.getAttribute(m.attributeName)) m.target.setAttribute(m.attributeName, v); }
+        else for (const n of m.addedNodes) walk(n);
+      }
+    } finally { observer.observe(document.body, OPTS); }
   });
-  observer.observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ATTRS });
+  observer.observe(document.body, OPTS);
 }

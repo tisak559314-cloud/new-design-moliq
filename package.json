@@ -1,0 +1,18 @@
+{
+  "name": "moliq-new-design",
+  "private": true,
+  "type": "module",
+  "description": "Moliq — кредиты, вклады, карты, курсы, золото и переводы банков Узбекистана. Статический сайт: сборка — tools/build.mjs",
+  "scripts": {
+    "dev": "python3 serve.py",
+    "build": "node tools/build.mjs",
+    "preview": "node tools/build.mjs && python3 serve.py --dist"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "esbuild": "^0.24.2",
+    "linkedom": "^0.18.9"
+  }
+}
