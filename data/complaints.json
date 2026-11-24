@@ -1,0 +1,25 @@
+{
+  "period": "III квартал 2026",
+  "prevPeriod": "II квартал 2026",
+  "total": 12307,
+  "prevTotal": 11331,
+  "minComplaints": 100,
+  "source": { "title": "Центральный банк Узбекистана", "url": "https://t.me/centralbankuzbekistan/13660" },
+  "via": [
+    { "title": "Spot.uz, 16.10.2026", "url": "https://www.spot.uz/oz/2026/10/16/index-of-inquiries/" },
+    { "title": "Kun.uz, 29.10.2026", "url": "https://kun.uz/en/news/2026/10/29/avo-bank-records-biggest-improvement-in-central-banks-complaint-index-in-q3-2026-58464" }
+  ],
+  "note": "ЦБ публикует первые десять банков; индекс не считается для банков, на которые за квартал пришло меньше 100 обращений. Числа ЦБ показывает в ролике, здесь они — по двум изданиям, которые его пересказали.",
+  "rows": [
+    { "bankId": "hayot", "index": 5.71, "prev": null },
+    { "bankId": "brb", "index": 3.17, "prev": 2.78 },
+    { "bankId": "mkb", "index": 2.53, "prev": 2.69 },
+    { "bankId": "tbc", "index": 1.96, "prev": 2.63 },
+    { "bankId": "anor", "index": 1.86, "prev": 1.84 },
+    { "bankId": "turon", "index": 1.62, "prev": 1.46 },
+    { "bankId": "asaka", "index": 1.27, "prev": 1.28 },
+    { "bankId": "infin", "index": 1.25, "prev": 1.46 },
+    { "bankId": "avo", "index": 1.25, "prev": 4.42 },
+    { "bankId": "kapital", "index": 1.24, "prev": 1.07 }
+  ]
+}

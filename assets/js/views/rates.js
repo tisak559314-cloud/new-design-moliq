@@ -2,11 +2,17 @@
 import { $, $$, esc, flag, fmt, fmt2, moneyInput, CUR } from "../lib.js";
 import { db, fxRows, fxBest, fxDelta } from "../data.js";
 import { bankLogo, dateRu } from "../app.js";
+import { chartHtml, bindChart } from "../chart.js";
 
 const NAMES = { USD: "Доллар США", EUR: "Евро", RUB: "Российский рубль" };
 const CHANNELS = [["any", "Все"], ["bank", "В отделении"], ["app", "В приложении"], ["atm", "В банкомате"]];
 
-export default async function rates(root, { path }) {
+/** Переключатель страницы курсов: три валюты и золото */
+export const fxSeg = (cur) => `<div class="seg seg-scroll" role="navigation" aria-label="Валюта">${Object.keys(NAMES).map((c) => `<a href="#/rates/${c}"${c === cur ? ' aria-current="page"' : ""}>${flag(c)}${c}</a>`).join("")}<a href="#/rates/gold"${cur === "gold" ? ' aria-current="page"' : ""}>${flag("XAU")}Золото</a></div>`;
+
+export default async function rates(root, ctx) {
+  const { path } = ctx;
+  if (path[1] === "gold") return (await import("./gold.js")).default(root, ctx);
   const cur = NAMES[path[1]] ? path[1] : "USD";
   let channel = "any", mode = "buy", amount = null;
   // способы обмена — только те, по которым в данных есть курсы; один способ — переключатель не нужен
@@ -17,13 +23,13 @@ export default async function rates(root, { path }) {
 
   root.innerHTML = `<div class="wrap page">
     <div class="page-head"><h1>Курсы валют</h1>
-      <div class="seg" role="navigation" aria-label="Валюта">${Object.keys(NAMES).map((c) => `<a href="#/rates/${c}"${c === cur ? ' aria-current="page"' : ""}>${flag(c)}${c}</a>`).join("")}</div>
+      ${fxSeg(cur)}
     </div>
     <div class="rates-top">
       <div class="card rate-hero">
         <div><div class="fx-top">${flag(cur)}<b>${NAMES[cur]}</b>${delta}</div>
           <div class="fx-rate num">${fmt2(cbu)}<small>сум · курс ЦБ на ${esc(dateRu(db.rates.cbuDate))}</small></div></div>
-        ${chart(cur)}
+        ${chartHtml(series(cur), { label: "Курс ЦБ за 30 дней", caption: "30 дней", f: fmt2 })}
         <div class="rate-trio" id="trio"></div>
       </div>
       <div class="card conv">
@@ -69,66 +75,9 @@ export default async function rates(root, { path }) {
     if (b?.dataset.ch) { channel = b.dataset.ch; $$("[data-ch]", root).forEach((x) => x.setAttribute("aria-pressed", String(x === b))); paint(); }
     else if (b?.dataset.mode) { mode = b.dataset.mode; $$("[data-mode]", root).forEach((x) => x.setAttribute("aria-pressed", String(x === b))); paintConv(); }
   });
-  bindChart($("#chart", root), series(cur), cbu);
+  bindChart($("#chart", root), series(cur), cbu, fmt2);
   paint();
 }
 
 /** Курс ЦБ за последние 30 дней: [{ d: "ГГГГ-ММ-ДД", v }] */
 const series = (cur) => db.history.slice(-30).map((x) => ({ d: x.d, v: x.cbu?.[cur] })).filter((p) => p.v > 0);
-const CH = { W: 600, H: 120, pad: 6 };
-/** Положение точки на графике в долях ширины и высоты */
-function scale(pts) {
-  const vals = pts.map((p) => p.v), min = Math.min(...vals), max = Math.max(...vals), span = max - min || 1;
-  return { min, max, x: (i) => i / (pts.length - 1), y: (v) => (CH.pad + (1 - (v - min) / span) * (CH.H - CH.pad * 2)) / CH.H };
-}
-
-function chart(cur) {
-  const pts = series(cur);
-  if (pts.length < 2) return "";
-  const { W, H } = CH, sc = scale(pts);
-  const line = pts.map((p, i) => `${i ? "L" : "M"}${(sc.x(i) * W).toFixed(1)} ${(sc.y(p.v) * H).toFixed(1)}`).join(" ");
-  return `<figure>
-    <div class="chart-box" id="chart" tabindex="0" role="group" aria-label="Курс ЦБ за 30 дней: от ${fmt2(sc.min)} до ${fmt2(sc.max)}">
-      <svg class="chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true"><path class="a" d="${line} L${W} ${H} L0 ${H} Z"/><path class="l" d="${line}" vector-effect="non-scaling-stroke"/></svg>
-      <i class="chart-line" hidden></i><i class="chart-dot" hidden></i>
-      <div class="chart-tip" role="status" hidden></div>
-    </div>
-    <figcaption class="cap num" style="display:flex;justify-content:space-between;margin-top:6px"><span>30 дней</span><span>${fmt2(sc.min)} – ${fmt2(sc.max)}</span></figcaption></figure>`;
-}
-
-/**
- * График отвечает на курсор, палец и стрелки клавиатуры: показывает дату, курс в этот день
- * и на сколько он выше или ниже сегодняшнего (today).
- */
-function bindChart(box, pts, today) {
-  if (!box || pts.length < 2) return;
-  const line = $(".chart-line", box), dot = $(".chart-dot", box), tip = $(".chart-tip", box), sc = scale(pts);
-  let at = -1;
-  const hide = () => { at = -1; line.hidden = dot.hidden = tip.hidden = true; };
-  const show = (i) => {
-    i = Math.max(0, Math.min(pts.length - 1, i));
-    if (i === at) return;
-    at = i;
-    const p = pts[i], x = sc.x(i) * 100, y = sc.y(p.v) * 100, diff = p.v - today;
-    const delta = Math.abs(diff) < 0.005 ? `<span class="delta flat">как сегодня</span>`
-      : `<span class="delta ${diff > 0 ? "up" : "down"}"><span class="num">${diff > 0 ? "▲" : "▼"} ${fmt2(Math.abs(diff))}</span><span>${diff > 0 ? "выше, чем сегодня" : "ниже, чем сегодня"}</span></span>`;
-    tip.innerHTML = `<span class="cap num">${esc(dateRu(p.d))}</span><b class="num">${fmt2(p.v)} сум</b>${delta}`;
-    line.hidden = dot.hidden = tip.hidden = false;
-    line.style.left = dot.style.left = `${x}%`;
-    dot.style.top = `${y}%`;
-    // подсказка — над точкой и не вылезает за края графика
-    const half = tip.offsetWidth / 2, w = box.clientWidth, px = (x / 100) * w;
-    tip.style.left = `${Math.max(half, Math.min(w - half, px))}px`;
-    tip.style.top = `${(y / 100) * box.clientHeight}px`;
-  };
-  const point = (e) => { const r = box.getBoundingClientRect(); show(Math.round(((e.clientX - r.left) / r.width) * (pts.length - 1))); };
-  box.addEventListener("pointermove", point);
-  box.addEventListener("pointerdown", point);
-  // мышь ушла — убираем; после касания пальцем подсказка остаётся, пока не коснутся в другом месте
-  box.addEventListener("pointerleave", (e) => { if (e.pointerType === "mouse") hide(); });
-  box.addEventListener("blur", hide);
-  box.addEventListener("keydown", (e) => {
-    if (e.key === "ArrowLeft" || e.key === "ArrowRight") { e.preventDefault(); show((at < 0 ? pts.length - 1 : at) + (e.key === "ArrowLeft" ? -1 : 1)); }
-    else if (e.key === "Escape") hide();
-  });
-}

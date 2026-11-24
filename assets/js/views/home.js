@@ -1,6 +1,6 @@
 // Главная: без приветствия. Сразу дела — кредит, вклад, карта, курс, банкомат.
 import { $, $$, esc, icon, flag, sticker, fmt, fmt2, short, pct, term, plural, moneyInput } from "../lib.js";
-import { db, atms, stats, fxBest, fxDelta, bankName, LOAN_TYPES } from "../data.js";
+import { db, atms, gold, p2p, stats, fxBest, fxDelta, bankName, LOAN_TYPES } from "../data.js";
 import { store, save, go } from "../store.js";
 import { bankLogo, rateRange } from "../app.js";
 import { atmMap, countAtms } from "../mapkit.js";
@@ -29,6 +29,8 @@ export default async function home(root) {
       <div class="tile"><h2 class="tile-t"><a href="#/cards">Выбрать карту</a></h2><p class="tile-h"><b class="num">${db.cards.length}</b> ${plural(db.cards.length, ["карта", "карты", "карт"])}</p>${sticker("card")}</div>
       <div class="tile"><h2 class="tile-t"><a href="#/rates">Обменять валюту</a></h2><p class="tile-h">Доллар — <b class="num">${fmt(db.rates.cbu.USD)}</b> сум</p>${sticker("swap")}</div>
       <div class="tile"><h2 class="tile-t"><a href="#/map">Найти банкомат</a></h2><p class="tile-h" id="atm-n">По всему Узбекистану</p>${sticker("pin")}</div>
+      <div class="tile tile-wide"><h2 class="tile-t"><a href="#/transfers">Перевести без комиссии</a></h2><p class="tile-h" id="p2p-h">С карты на карту</p>${sticker("send")}</div>
+      <div class="tile tile-wide"><h2 class="tile-t"><a href="#/rates/gold">Купить золото</a></h2><p class="tile-h" id="gold-h">Слитки Центрального банка</p>${sticker("gold")}</div>
     </section>
 
     <div class="check-bar">
@@ -119,6 +121,17 @@ export default async function home(root) {
     }, { rootMargin: "300px" });
     io.observe($("#mini-map", root));
   }).catch(() => { /* счётчик просто не появится */ });
+
+  // ── Подсказки в плитках переводов и золота: числа из данных, без них остаётся общая подпись ──
+  p2p().then((d) => {
+    // лимит, который годится для любой пары карт Uzcard и Humo (а не только Humo → Humo, где он в десять раз больше)
+    const top = Math.max(0, ...d.apps.filter((a) => !a.ownCard).flatMap((a) => a.rules.filter((r) => r.from.length > 1 && r.to.length > 1).map((r) => r.limit)));
+    if (!gone && top) $("#p2p-h", root).innerHTML = `<span>до</span> <b class="num">${short(top)}</b> <span>в месяц в одном приложении</span>`;
+  }).catch(() => {});
+  gold().then((d) => {
+    const bar = d.bars[0];
+    if (!gone && bar) $("#gold-h", root).innerHTML = `<span>Слиток</span> <span class="num">${bar.g} г</span> — <b class="num">${fmt(bar.sell)}</b> сум`;
+  }).catch(() => {});
 
   // ── События ──
   root.addEventListener("click", (e) => {

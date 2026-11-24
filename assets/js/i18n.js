@@ -114,6 +114,40 @@ const D = {
   "Укажите сумму — и я подберу.": ["Summani kiriting — tanlab beraman.", "Enter the amount and I’ll find offers."], "Укажите срок — и я подберу.": ["Muddatni tanlang — tanlab beraman.", "Choose the term and I’ll find offers."],
   // ошибки
   "Не удалось загрузить данные": ["Maʼlumotlar yuklanmadi", "Could not load the data"], "Обновить": ["Yangilash", "Refresh"],
+  // переводы без комиссии
+  "Переводы": ["Oʻtkazmalar", "Transfers"], "Переводы без комиссии": ["Komissiyasiz oʻtkazmalar", "Transfers with no fee"], "Перевести без комиссии": ["Komissiyasiz oʻtkazish", "Send with no fee"],
+  "С карты на карту": ["Kartadan kartaga", "Card to card"], "в месяц в одном приложении": ["oyiga bitta ilovada", "a month in one app"], "С карты": ["Kartadan", "From card"], "На карту": ["Kartaga", "To card"], "Поменять карты местами": ["Kartalar oʻrnini almashtirish", "Swap the cards"],
+  "Сколько переводите": ["Qancha oʻtkazasiz", "How much you send"], "С карты любого банка": ["Istalgan bank kartasidan", "From any bank’s card"], "Где комиссии нет": ["Qayerda komissiya yoʻq", "Where there is no fee"],
+  "Банки меняют лимиты без предупреждения — перед переводом посмотрите комиссию в приложении. Тарифы проверены": ["Banklar limitlarni ogohlantirmasdan oʻzgartiradi — oʻtkazishdan oldin ilovada komissiyani koʻring. Tariflar tekshirilgan:", "Banks change limits without notice — check the fee in the app before you send. Tariffs checked on"],
+  "Без комиссии получится только часть": ["Komissiyasiz faqat bir qismi oʻtadi", "Only part can go with no fee"], "Хватит одного приложения": ["Bitta ilova yetarli", "One app is enough"], "Разбейте перевод на части": ["Oʻtkazmani qismlarga boʻling", "Split the transfer"],
+  "Комиссия": ["Komissiya", "Fee"], "Сэкономите": ["Tejaysiz", "You save"], "Остаток": ["Qoldiq", "The rest"], "с комиссией": ["komissiya bilan", "with a fee"], "Сравниваем с комиссией": ["Taqqoslash uchun komissiya:", "Compared with a fee of"],
+  "Нужна карта банка": ["Bank kartasi kerak", "Needs this bank’s card"], "Включите пакет Transfer в приложении": ["Ilovada Transfer paketini yoqing", "Turn on the Transfer package in the app"], "Статус «Аъзо»": ["«Aʼzo» maqomi", "“Aʼzo” status"], "Нужна идентификация": ["Identifikatsiya kerak", "Identification required"], "Акция до": ["Aksiya muddati:", "Promo until"],
+  "Без комиссии в месяц": ["Oyiga komissiyasiz", "No fee per month"], "Сверх лимита": ["Limitdan ortigʻiga", "Above the limit"], "Проверено": ["Tekshirilgan", "Checked"], "Уже переводил": ["Oʻtkazganman", "I’ve sent already"], "Тариф": ["Tarif", "Tariff"],
+  "Сколько уже перевели в этом месяце": ["Shu oyda qancha oʻtkazdingiz", "How much you’ve sent this month"], "Сохранить": ["Saqlash", "Save"],
+  "Для таких карт бесплатных переводов не нашли": ["Bunday kartalar uchun bepul oʻtkazma topilmadi", "No free transfers found for these cards"],
+  "Поменяйте карты или снимите условие «С карты любого банка»": ["Kartalarni almashtiring yoki «Istalgan bank kartasidan» shartini olib tashlang", "Change the cards or turn off “From any bank’s card”"],
+  "Тарифы не загрузились": ["Tariflar yuklanmadi", "Tariffs did not load"], "Обновите страницу": ["Sahifani yangilang", "Reload the page"],
+  // золото
+  "Золото": ["Oltin", "Gold"], "Золотые слитки": ["Oltin quymalar", "Gold bars"], "Купить золото": ["Oltin sotib olish", "Buy gold"], "Слитки Центрального банка": ["Markaziy bank quymalari", "Central Bank bars"], "Слиток": ["Quyma", "Bar"],
+  "Вес слитка": ["Quyma vazni", "Bar weight"], "Мой слиток": ["Mening quymam", "My bar"], "Сколько заплатили": ["Qancha toʻlagansiz", "How much you paid"], "Купить в банке": ["Bankdan sotib olish", "Buy at a bank"],
+  "Банк выкупит": ["Bank qaytarib oladi", "Bank buys back"], "в целой упаковке": ["butun qadoqda", "in intact packaging"], "Повреждённая упаковка": ["Shikastlangan qadoq", "Damaged packaging"], "после экспертизы": ["ekspertizadan soʻng", "after examination"],
+  "Если продать сразу, потеряете": ["Darhol sotsangiz, yoʻqotasiz", "Sell right away and you lose"], "Банк выкупит сегодня": ["Bank bugun qaytarib oladi", "Bank buys back today"],
+  "Вы в плюсе на": ["Foydangiz:", "You are up by"], "Вы в минусе на": ["Zararingiz:", "You are down by"], "целая упаковка": ["butun qadoq", "intact packaging"],
+  "1 г в слитке ЦБ": ["MB quymasida 1 g", "1 g in a CB bar"], "1 г на мировом рынке": ["Jahon bozorida 1 g", "1 g on the world market"], "Наценка ЦБ к мировой цене": ["MB ustamasi (jahon narxiga nisbatan)", "CB markup over the world price"],
+  "Где есть слитки": ["Quymalar qayerda bor", "Where bars are in stock"], "Область": ["Viloyat", "Region"], "Любой вес": ["Istalgan vazn", "Any weight"], "Остатки на": ["Qoldiqlar sanasi:", "Stock as of"],
+  "Центральный банк": ["Markaziy bank", "Central Bank"], "Найти на карте": ["Xaritadan topish", "Find on the map"], "Таких слитков здесь сегодня нет": ["Bugun bu yerda bunday quymalar yoʻq", "No such bars here today"],
+  "Выберите другой вес или область": ["Boshqa vazn yoki viloyatni tanlang", "Choose another weight or region"], "Цены слитков не загрузились": ["Quyma narxlari yuklanmadi", "Bar prices did not load"], "Цена слитка по дням": ["Quyma narxi kunlar boʻyicha", "Bar price by day"],
+  "город Ташкент": ["Toshkent shahri", "Tashkent city"], "Ташкентская область": ["Toshkent viloyati", "Tashkent region"], "Республика Каракалпакстан": ["Qoraqalpogʻiston Respublikasi", "Republic of Karakalpakstan"],
+  "Андижанская область": ["Andijon viloyati", "Andijan region"], "Бухарская область": ["Buxoro viloyati", "Bukhara region"], "Джизакская область": ["Jizzax viloyati", "Jizzakh region"],
+  "Кашкадарьинская область": ["Qashqadaryo viloyati", "Kashkadarya region"], "Наманганская область": ["Namangan viloyati", "Namangan region"], "Навоийская область": ["Navoiy viloyati", "Navoi region"],
+  "Самаркандская область": ["Samarqand viloyati", "Samarkand region"], "Сырдарьинская область": ["Sirdaryo viloyati", "Syrdarya region"], "Сурхандарьинская область": ["Surxondaryo viloyati", "Surkhandarya region"],
+  "Ферганская область": ["Fargʻona viloyati", "Fergana region"], "Хорезмская область": ["Xorazm viloyati", "Khorezm region"],
+  // индекс жалоб
+  "Отделение": ["Boʻlim", "Branch"],
+  "Раздел": ["Boʻlim", "Section"], "Индекс жалоб": ["Shikoyatlar indeksi", "Complaint index"], "Индекс жалоб ЦБ": ["MB shikoyatlar indeksi", "CB complaint index"], "Выше 1": ["1 dan yuqori", "Above 1"],
+  "— на банк жалуются чаще, чем у него клиентов": ["— bank ustidan shikoyatlar ulushi mijozlari ulushidan katta", "— the bank’s share of complaints exceeds its share of customers"], "новый в списке": ["roʻyxatda yangi", "new in the list"],
+  "Всего жалоб в ЦБ:": ["MBga tushgan jami shikoyatlar:", "Complaints to the CB in total:"], "ЦБ называет первые десять банков и не считает индекс, если жалоб меньше ста.": ["MB dastlabki oʻnta bankni eʼlon qiladi; shikoyatlar yuztadan kam boʻlsa, indeks hisoblanmaydi.", "The CB names the first ten banks and does not compute the index below one hundred complaints."],
+  "Публикация ЦБ": ["MB eʼloni", "CB publication"], "Индекс не загрузился": ["Indeks yuklanmadi", "The index did not load"],
 };
 
 // фразы с числом внутри: порядок слов в языках разный, поэтому переводится весь элемент; {0}, {1} — его <b>
@@ -124,7 +158,7 @@ const E = {
 
 const UNITS = [
   [/(\d) ?млрд/g, ["$1 mlrd", "$1 bln"]], [/(\d) ?млн/g, ["$1 mln", "$1 mln"]], [/(\d) ?тыс\./g, ["$1 ming", "$1K"]], [/сум/g, ["soʻm", "UZS"]], [/мес\./g, ["oy", "mo."]],
-  [/\b1 год/g, ["1 yil", "1 year"]], [/(\d) (?:года|лет)/g, ["$1 yil", "$1 years"]], [/(\d) км/g, ["$1 km", "$1 km"]], [/(\d) м$/g, ["$1 m", "$1 m"]], [/в год/g, ["yiliga", "a year"]],
+  [/\b1 год/g, ["1 yil", "1 year"]], [/(\d) (?:года|лет)/g, ["$1 yil", "$1 years"]], [/(\d) км/g, ["$1 km", "$1 km"]], [/(\d) г(?=$|[\s,])/g, ["$1 g", "$1 g"]], [/шт\./g, ["dona", "pcs"]], [/(\d) м$/g, ["$1 m", "$1 m"]], [/в год/g, ["yiliga", "a year"]],
 ];
 const VALUE = /^[−\-]?[\s\d.,%–—-]*(?:\d|млн|млрд|тыс\.|сум|мес\.|год|года|лет|км|м|\$|€|₽)[\s\d.,%–—\-а-я.$€₽]*$/i;
 const V = "([\\d\\s.,%–-]+(?:\\s?(?:млн|млрд|тыс\\.|сум|мес\\.|год|года|лет|\\$|€|₽))*)";
@@ -187,6 +221,14 @@ const R = [
   [new RegExp(`^На ${V} на ${V} предложений нет\\. Попробуйте другой срок или сумму\\.$`), (m, u) => `${u(m[1])}, ${u(m[2])}ga takliflar yoʻq. Boshqa muddat yoki summani sinab koʻring.`, (m, u) => `No offers for ${u(m[1])} over ${u(m[2])}. Try another term or amount.`],
   [/^Все (\d+)$/, (m) => `Barchasi: ${m[1]}`, (m) => `All ${m[1]}`],
   [/^Курс ЦБ за 30 дней: от ([\d ,]+) до ([\d ,]+)$/, (m) => `MB kursi 30 kunda: ${m[1]} dan ${m[2]} gacha`, (m) => `CB rate over 30 days: from ${m[1]} to ${m[2]}`],
+  [/^цена ЦБ на ([\d.]+)$/, (m) => `MB narxi, ${m[1]}`, (m) => `CB price on ${m[1]}`],
+  [/^([\d,]+%) цены$/, (m) => `narxning ${m[1]}`, (m) => `${m[1]} of the price`],
+  [/^(\d+) (?:день|дня|дней)$/, (m) => `${m[1]} kun`, (m) => `${m[1]} ${en1(m[1], "day", "days")}`],
+  [/^([\d ,]+) \$ за унцию$/, (m) => `unsiyasi ${m[1]} $`, (m) => `$${m[1]} per ounce`],
+  [/^Цена слитка по дням: от ([\d ]+) до ([\d ]+)$/, (m) => `Quyma narxi: ${m[1]} dan ${m[2]} gacha`, (m) => `Bar price: from ${m[1]} to ${m[2]}`],
+  [/^(I|II|III|IV) квартал (\d{4})$/, (m) => `${m[2]}-yil ${m[1]} chorak`, (m) => `Q${["I", "II", "III", "IV"].indexOf(m[1]) + 1} ${m[2]}`],
+  [new RegExp(`^Осталось ${V} из ${V}$`), (m, u) => `${u(m[2])} dan ${u(m[1])} qoldi`, (m, u) => `${u(m[1])} of ${u(m[2])} left`],
+  [/^(\d+) из (\d+)$/, (m) => `${m[2]} tadan ${m[1]} ta`, (m) => `${m[1]} of ${m[2]}`],
 ];
 
 let lang = "ru", observer = null;

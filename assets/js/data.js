@@ -44,6 +44,12 @@ export function init() {
   }));
 }
 export const atms = () => load("atms");
+/** Золотые слитки ЦБ: цены, остатки по отделениям, история (tools/gold.mjs) */
+export const gold = () => load("gold");
+/** Переводы с карты на карту: где комиссии нет и до какой суммы (data/p2p.json, ведётся вручную по тарифам банков) */
+export const p2p = () => load("p2p");
+/** Индекс жалоб ЦБ по банкам за квартал (data/complaints.json, из публикации ЦБ) */
+export const complaints = () => load("complaints");
 
 export const bankName = (id) => db.bank[id]?.name || id;
 export const stats = {

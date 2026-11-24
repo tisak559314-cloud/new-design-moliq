@@ -8,6 +8,7 @@ const NAV = [
   { id: "credits", href: "#/credits", label: "Кредиты", icon: "credit" },
   { id: "deposits", href: "#/deposits", label: "Вклады", icon: "deposit" },
   { id: "cards", href: "#/cards", label: "Карты", icon: "card" },
+  { id: "transfers", href: "#/transfers", label: "Переводы", icon: "send" },
   { id: "rates", href: "#/rates", label: "Курсы валют", tab: "Курсы", icon: "fx" },
   { id: "map", href: "#/map", label: "Банкоматы", tab: "Карта", icon: "pin" },
   { id: "check", href: "#/check", label: "Что мне по силам", icon: "gauge" },
@@ -20,6 +21,7 @@ const VIEWS = {
   credits: () => import("./views/catalog.js"),
   deposits: () => import("./views/catalog.js"),
   cards: () => import("./views/catalog.js"),
+  transfers: () => import("./views/transfers.js"),
   rates: () => import("./views/rates.js"),
   check: () => import("./views/check.js"),
   map: () => import("./views/map.js"),
@@ -27,7 +29,7 @@ const VIEWS = {
   banks: () => import("./views/banks.js"),
   bank: () => import("./views/banks.js"),
 };
-const TITLES = { "": "Moliq — кредиты, вклады, карты и курсы банков Узбекистана", credits: "Кредиты", deposits: "Вклады", cards: "Карты", rates: "Курсы валют", check: "Что мне по силам", map: "Банкоматы на карте", chat: "AI-чат", banks: "Банки", bank: "Банк" };
+const TITLES = { "": "Moliq — кредиты, вклады, карты и курсы банков Узбекистана", credits: "Кредиты", deposits: "Вклады", cards: "Карты", transfers: "Переводы без комиссии", rates: "Курсы валют", check: "Что мне по силам", map: "Банкоматы на карте", chat: "AI-чат", banks: "Банки", bank: "Банк" };
 
 export const bankLogo = (id, cls = "") => {
   const b = db.bank[id];
