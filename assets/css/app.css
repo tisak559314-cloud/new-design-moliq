@@ -222,6 +222,8 @@ h3, .h3 { font-size: 20px; line-height: 1.25; font-weight: 600; letter-spacing: 
 .mapt-l { padding: 28px; display: flex; flex-direction: column; gap: 16px; }
 .mapt-l .btn { margin-top: auto; align-self: flex-start; }
 .mapt-r { position: relative; background: #eef3ff; min-height: 260px; }
+/* мини-карта целиком — ссылка на большую карту */
+.mapt-r, .mapt-r .maplibregl-canvas { cursor: pointer; }
 .mapt-r .mapbox, .mapbox.maplibregl-map { position: absolute; inset: 0; font-family: var(--font); }
 .mapt-count { position: absolute; left: 16px; top: 16px; z-index: 2; background: var(--surface); border-radius: var(--pill); height: 36px; padding: 0 14px; display: inline-flex; align-items: center; font-size: 14px; font-weight: 600; box-shadow: 0 2px 8px rgba(10, 11, 16, .12); }
 
@@ -885,4 +887,17 @@ a.stk-name:hover { color: var(--blue); }
   .stk-risk li { padding: 12px 14px; border-radius: 16px; }
   .buy-code { grid-template-columns: minmax(0, 1fr); gap: 8px; }
   .tile-stocks { grid-column: span 2; }
+}
+
+/* ───────── 21. Курсы: «Хочу купить / продать» у таблицы банков ───────── */
+.fx-want { display: flex; align-items: center; justify-content: flex-end; gap: 10px 16px; flex-wrap: wrap; min-width: 0; }
+.fx-want-mode { display: flex; align-items: center; gap: 10px; }
+.fx-want-mode .cap { font-size: 14px; color: var(--ink-2); }
+.fx-tbl-head .on { color: var(--ink); font-weight: 600; }
+@media (max-width: 760px) {
+  .sec-head:has(.fx-want) { flex-direction: column; align-items: stretch; }
+  .fx-want { justify-content: flex-start; }
+  .fx-want-mode { width: 100%; }
+  .fx-want-mode .seg { flex: 1; display: flex; }
+  .fx-want-mode .seg button { flex: 1; justify-content: center; }
 }

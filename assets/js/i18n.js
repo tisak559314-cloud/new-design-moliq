@@ -72,6 +72,7 @@ const D = {
   "Под такие условия ничего нет": ["Bunday shartlarga mos taklif yoʻq", "Nothing matches these terms"], "Измените сумму, срок или уберите фильтры": ["Summa yoki muddatni oʻzgartiring, filtrlarni olib tashlang", "Change the amount or term, or remove filters"],
   // курсы
   "Доллар США": ["AQSh dollari", "US dollar"], "Российский рубль": ["Rossiya rubli", "Russian ruble"], "Сколько получится": ["Qancha boʻladi", "How much it comes to"], "Что делаете": ["Nima qilasiz", "What you do"],
+  "Хочу": ["Xohlayman", "I want to"], "Купить": ["Sotib olish", "Buy"], "Продать": ["Sotish", "Sell"],
   "Покупаю": ["Sotib olaman", "I buy"], "Продаю": ["Sotaman", "I sell"], "Заплатите": ["Toʻlaysiz", "You pay"], "Получите": ["Olasiz", "You get"], "Курсы в банках": ["Banklardagi kurslar", "Rates at banks"],
   "Где меняете": ["Qayerda almashtirasiz", "Where you exchange"], "В отделении": ["Boʻlimda", "At a branch"], "В приложении": ["Ilovada", "In the app"], "В банкомате": ["Bankomatda", "At an ATM"],
   "Банк покупает": ["Bank sotib oladi", "Bank buys"], "Банк продаёт": ["Bank sotadi", "Bank sells"], "Банки не публикуют такой курс": ["Banklar bunday kursni eʼlon qilmaydi", "Banks do not publish this rate"],

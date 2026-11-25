@@ -6,10 +6,11 @@ import { db, bankName, stocks as loadStocks } from "./data.js";
 import { store, save } from "./store.js";
 import { href, lang } from "./nav.js";
 
+// «Карты» в меню нет (решение Азама 2026-11-25): раздел открывается с главной и из поиска; «Банки» — первым
 export const NAV = [
+  { id: "banks", label: "Банки", icon: "bank" },
   { id: "credits", label: "Кредиты", icon: "credit" },
   { id: "deposits", label: "Вклады", icon: "deposit" },
-  { id: "cards", label: "Карты", icon: "card" },
   { id: "transfers", label: "Переводы", icon: "send" },
   { id: "rates", label: "Курсы валют", tab: "Курсы", icon: "fx" },
   { id: "stocks", label: "Акции", icon: "stock" },
@@ -49,7 +50,7 @@ export function paintChrome(section, here = "/") {
   const cur = LANG_NAMES.find((l) => l.id === lang()) || LANG_NAMES[0];
   $("#top").innerHTML = `<div class="wrap top-in">
     <a class="brand" href="#/" aria-label="Moliq — на главную"><img src="/assets/moliq-logo.svg" alt="" width="34" height="28">Moliq</a>
-    <nav class="nav" aria-label="Разделы">${NAV.map((n) => `<a href="#/${n.id}"${n.id === section ? ' aria-current="page"' : ""}>${n.label}</a>`).join("")}</nav>
+    <nav class="nav" aria-label="Разделы">${NAV.map((n) => `<a href="#/${n.id}"${n.id === section || (n.id === "banks" && section === "bank") ? ' aria-current="page"' : ""}>${n.label}</a>`).join("")}</nav>
     <div class="top-r">
       <button class="icon-btn" data-act="search" aria-label="Поиск">${icon("search")}</button>
       <div class="lang">

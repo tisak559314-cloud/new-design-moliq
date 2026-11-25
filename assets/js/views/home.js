@@ -143,6 +143,8 @@ export default async function home(root) {
 
   // ── События ──
   root.addEventListener("click", (e) => {
+    // нажатие на мини-карту открывает большую карту с теми же фильтрами (кроме кнопки «i» с источниками карты)
+    if (e.target.closest(".mapt-r") && !e.target.closest(".maplibregl-ctrl")) { go($("#map-open", root).getAttribute("href")); return; }
     const b = e.target.closest("button");
     if (!b) return;
     if (b.dataset.best) { $$("[data-best]", root).forEach((x) => x.setAttribute("aria-pressed", String(x === b))); paintBest(b.dataset.best); }

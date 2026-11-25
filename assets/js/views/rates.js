@@ -41,7 +41,10 @@ export default async function rates(root, ctx) {
     </div>
     <section class="sec" aria-labelledby="banks-t">
       <div class="sec-head"><h2 id="banks-t">Курсы в банках</h2>
-        ${channels.length > 2 ? `<div class="seg seg-scroll" role="group" aria-label="Где меняете">${channels.map(([id, name], i) => `<button data-ch="${id}" aria-pressed="${i === 0}">${name}</button>`).join("")}</div>` : ""}
+        <div class="fx-want">
+          ${channels.length > 2 ? `<div class="seg seg-scroll" role="group" aria-label="Где меняете">${channels.map(([id, name], i) => `<button data-ch="${id}" aria-pressed="${i === 0}">${name}</button>`).join("")}</div>` : ""}
+          <div class="fx-want-mode"><span class="cap">Хочу</span><div class="seg" role="group" aria-label="Хочу"><button data-mode="buy" aria-pressed="true">Купить</button><button data-mode="sell" aria-pressed="false">Продать</button></div></div>
+        </div>
       </div>
       <div class="tbl" id="tbl"></div>
     </section>
@@ -52,11 +55,14 @@ export default async function rates(root, ctx) {
     $("#trio", root).innerHTML = `
       <div class="kv"><div class="k">Купить дешевле</div><div class="v num">${best.cheapest ? fmt(best.cheapest.sell) : "—"}</div><div class="s">${esc(best.cheapest?.bank || "Нет данных")}</div></div>
       <div class="kv"><div class="k">Продать дороже</div><div class="v num">${best.dearest ? fmt(best.dearest.buy) : "—"}</div><div class="s">${esc(best.dearest?.bank || "Нет данных")}</div></div>`;
-    // сначала те, где дешевле купить
-    rows.sort((a, b) => (a.sell ?? Infinity) - (b.sell ?? Infinity));
+    // «Хочу купить» — сначала те, где дешевле купить (банк продаёт); «хочу продать» — где дороже продать (банк покупает).
+    // Банки без нужного курса — в конце
+    if (mode === "buy") rows.sort((a, b) => (a.sell ?? Infinity) - (b.sell ?? Infinity));
+    else rows.sort((a, b) => (b.buy ?? -Infinity) - (a.buy ?? -Infinity));
     // время обновления по каждому банку есть не в каждом источнике — без него колонка не нужна
     const dated = rows.some((r) => r.updated), cls = dated ? "tbl-row" : "tbl-row tbl-3";
-    $("#tbl", root).innerHTML = rows.length ? `<div class="${cls} tbl-head"><div>Банк</div><div>Банк покупает</div><div>Банк продаёт</div>${dated ? "<div>Обновлено</div>" : ""}</div>` + rows.map((r) => `<div class="${cls}">
+    const on = (m) => (mode === m ? ' class="on"' : "");
+    $("#tbl", root).innerHTML = rows.length ? `<div class="${cls} tbl-head fx-tbl-head"><div>Банк</div><div${on("sell")}>Банк покупает</div><div${on("buy")}>Банк продаёт</div>${dated ? "<div>Обновлено</div>" : ""}</div>` + rows.map((r) => `<div class="${cls}">
         <a class="tbl-bank" href="#/bank/${r.bankId}">${bankLogo(r.bankId, "sm")}<span>${esc(r.bank)}</span></a>
         <div><span class="v num${best.dearest && r.buy === best.dearest.buy ? " top-v" : ""}">${r.buy ? fmt(r.buy) : "—"}</span></div>
         <div><span class="v num${best.cheapest && r.sell === best.cheapest.sell ? " top-v" : ""}">${r.sell ? fmt(r.sell) : "—"}</span></div>
@@ -73,7 +79,8 @@ export default async function rates(root, ctx) {
   root.addEventListener("click", (e) => {
     const b = e.target.closest("button");
     if (b?.dataset.ch) { channel = b.dataset.ch; $$("[data-ch]", root).forEach((x) => x.setAttribute("aria-pressed", String(x === b))); paint(); }
-    else if (b?.dataset.mode) { mode = b.dataset.mode; $$("[data-mode]", root).forEach((x) => x.setAttribute("aria-pressed", String(x === b))); paintConv(); }
+    // «Покупаю / Продаю» в калькуляторе и «Хочу купить / продать» у таблицы — один выбор: меняется и то, и другое
+    else if (b?.dataset.mode) { mode = b.dataset.mode; $$("[data-mode]", root).forEach((x) => x.setAttribute("aria-pressed", String(x.dataset.mode === mode))); paint(); }
   });
   bindChart($("#chart", root), series(cur), cbu, fmt2);
   paint();
