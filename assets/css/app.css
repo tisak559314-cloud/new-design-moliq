@@ -773,6 +773,10 @@ a.stk-name:hover { color: var(--blue); }
 .stk-ava { width: 44px; height: 44px; border-radius: 12px; flex: none; display: grid; place-items: center; font-size: 11px; font-weight: 700; letter-spacing: -.01em; background: var(--soft); color: var(--ink-2); overflow: hidden; }
 .stk-ava.sm { width: 36px; height: 36px; border-radius: 10px; font-size: 10px; }
 .stk-ava.lg { width: 64px; height: 64px; border-radius: 18px; font-size: 15px; }
+.stk-ava.has-logo { background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); }
+.stk-ava img { width: 100%; height: 100%; object-fit: cover; display: block; }
+/* логотипы с биржи — разных пропорций: вписываем целиком, а не обрезаем */
+.stk-ava img.fit { object-fit: contain; padding: 4px; }
 .s-bank { background: var(--blue-soft); color: var(--blue); }
 .s-industry { background: var(--amber-soft); color: var(--amber); }
 .s-insurance { background: var(--green-soft); color: var(--green); }

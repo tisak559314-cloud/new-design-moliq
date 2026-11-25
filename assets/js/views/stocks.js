@@ -7,6 +7,7 @@ import { stocks as loadStocks, stockHistory } from "../data.js";
 import { openLayer, searchKey, dateRu } from "../app.js";
 import { href, lang } from "../nav.js";
 import { tr } from "../i18n.js";
+import { stockLogo } from "../stock-logo.js";
 
 export const SECTORS = [["bank", "Банки"], ["industry", "Промышленность"], ["insurance", "Страхование"], ["oilgas", "Нефть и газ"], ["telecom", "Телеком"], ["transport", "Транспорт"], ["other", "Прочие"]];
 const SECTOR = Object.fromEntries(SECTORS);
@@ -73,7 +74,12 @@ function freshness(s) {
 const activeGroup = (s) => (s.status === "gone" ? 4 : { ok: 0, old: 1, stale: 2, none: 3 }[freshness(s).k]);
 
 const initials = (n) => String(n || "?").replace(/[^A-Za-zА-Яа-яЁё0-9 ]/g, "").trim().split(/\s+/).slice(0, 2).map((w) => w[0]).join("").toUpperCase() || "?";
-const ava = (s, cls = "") => `<span class="stk-ava s-${esc(s.sector || s.s || "other")} ${cls}" aria-hidden="true">${esc(s.t || initials(s.n))}</span>`;
+/** Аватар бумаги: логотип компании, если он есть, иначе тикер в квадрате цвета отрасли. logoT — тикер для логотипа */
+const ava = (s, cls = "", logoT = s.t) => {
+  const logo = stockLogo(logoT);
+  return logo ? `<span class="stk-ava has-logo ${cls}" aria-hidden="true"><img src="${logo}" alt="" loading="lazy"${logo.startsWith("/assets/stocks/") ? ' class="fit"' : ""}></span>`
+    : `<span class="stk-ava s-${esc(s.sector || s.s || "other")} ${cls}" aria-hidden="true">${esc(s.t || initials(s.n))}</span>`;
+};
 const subline = (s) => [KIND[s.kind], s.status === "listed" ? CAT[s.cat] : s.status === "otc" ? "Вне котировального листа" : "Торги прекращены"].filter(Boolean).join(" · ");
 
 export default async function stocksView(root, { path, query }) {
@@ -212,7 +218,7 @@ function catalog(root, data, query) {
   function issuerRow(i) {
     const listed = (i.t || []).map((t) => `<a class="tag tag-blue" href="#/stocks/${esc(t)}">${esc(t)}</a>`).join("");
     return `<div class="stk stk-co">
-      <div class="stk-id">${ava({ t: initials(i.n), s: i.s })}<div><b class="stk-name">${esc(i.n)}</b><div class="stk-sub">${esc([i.r, SECTOR[i.s]].filter(Boolean).join(" · "))}</div><div class="stk-sub num">ИНН ${esc(i.inn)}${i.isin ? ` · ISIN ${esc(i.isin)}` : ""}</div></div></div>
+      <div class="stk-id">${ava({ t: initials(i.n), s: i.s }, "", i.t?.[0])}<div><b class="stk-name">${esc(i.n)}</b><div class="stk-sub">${esc([i.r, SECTOR[i.s]].filter(Boolean).join(" · "))}</div><div class="stk-sub num">ИНН ${esc(i.inn)}${i.isin ? ` · ISIN ${esc(i.isin)}` : ""}</div></div></div>
       <div class="kv"><div class="k">Акций выпущено</div><div class="v num">${i.sh ? short(i.sh) : "—"}</div></div>
       <div class="kv"><div class="k">Номинал</div><div class="v num">${i.nom ? price(i.nom) : "—"}</div></div>
       <div class="kv"><div class="k">Статус</div><div class="v stk-tags">${listed ? `<span class="tag tag-green">Торгуется на бирже</span>${listed}` : `<span class="tag">Выпуск зарегистрирован</span>`}${i.pref ? `<span class="tag">Есть привилегированные</span>` : ""}${i.blocked ? `<span class="tag tag-amber">Заблокирован в депозитарии</span>` : ""}</div></div>

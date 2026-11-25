@@ -96,7 +96,7 @@ async function bundle() {
 }
 
 function copyStatic() {
-  for (const rel of ["assets/banks", "assets/icon.svg", "assets/moliq-logo.svg", "assets/og.png"]) {
+  for (const rel of ["assets/banks", "assets/stocks", "assets/icon.svg", "assets/moliq-logo.svg", "assets/og.png"]) {
     const src = path.join(ROOT, rel);
     if (!fs.existsSync(src)) { if (rel.endsWith("og.png")) console.warn("  ! нет assets/og.png — превью ссылок будет без картинки"); continue; }
     fs.cpSync(src, path.join(DIST, rel), { recursive: true });
@@ -271,6 +271,8 @@ Sitemap: ${SITE}/sitemap.xml
 /assets/css/*
   Cache-Control: public, max-age=31536000, immutable
 /assets/banks/*
+  Cache-Control: public, max-age=604800
+/assets/stocks/*
   Cache-Control: public, max-age=604800
 /data/*
   Cache-Control: public, max-age=300

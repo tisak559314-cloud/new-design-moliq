@@ -5,6 +5,7 @@ import { $, $$, esc, safeUrl, icon, flag, toast, pct, short, term, fmt2 } from "
 import { db, bankName, stocks as loadStocks } from "./data.js";
 import { store, save } from "./store.js";
 import { href, lang } from "./nav.js";
+import { stockLogo } from "./stock-logo.js";
 
 // «Карты» в меню нет (решение Азама 2026-11-25): раздел открывается с главной и из поиска; «Банки» — первым
 export const NAV = [
@@ -143,7 +144,7 @@ export function searchResults(text) {
   const g = (title, rows) => (rows.length ? `<div class="res-g">${title}</div>${rows.join("")}` : "");
   // тикер ищем и с начала («uzm» → UZMT), и в названии компании
   const stocks = (stockList ?? []).filter((s) => s.t.toLowerCase().startsWith(t.replace(/\s/g, "")) || searchKey(`${s.name} ${s.full || ""} ${s.code}`).includes(t)).slice(0, 4);
-  const stockRow = (s) => `<a class="res" href="#/stocks/${esc(s.t)}"><span class="stk-ava sm s-${esc(s.sector)}" aria-hidden="true">${esc(s.t)}</span><div><b>${esc(s.name)}</b><span>${esc(s.t)} · Акции</span></div>${s.last ? `<span class="r num">${esc(fmt2(s.last.p))} сум</span>` : ""}</a>`;
+  const stockRow = (s) => `<a class="res" href="#/stocks/${esc(s.t)}">${stockLogo(s.t) ? `<span class="stk-ava sm has-logo" aria-hidden="true"><img src="${stockLogo(s.t)}" alt="" loading="lazy"${stockLogo(s.t).startsWith("/assets/stocks/") ? ' class="fit"' : ""}></span>` : `<span class="stk-ava sm s-${esc(s.sector)}" aria-hidden="true">${esc(s.t)}</span>`}<div><b>${esc(s.name)}</b><span>${esc(s.t)} · Акции</span></div>${s.last ? `<span class="r num">${esc(fmt2(s.last.p))} сум</span>` : ""}</a>`;
   const out = g("Банки", banks.map((b) => row(`#/bank/${b.id}`, b.id, b.name, "Все продукты банка")))
     + g("Акции", stocks.map(stockRow))
     + g("Кредиты", loans.map((l) => row(`#/credits/${l.type}?open=${l.id}`, l.bankId, l.name, bankName(l.bankId), l.rateLo != null ? rateRange(l) : "")))
