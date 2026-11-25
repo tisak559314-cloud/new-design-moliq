@@ -27,7 +27,9 @@ const DIST = path.join(ROOT, "dist");
 const SITE = (process.env.SITE_URL || "https://moliq-new-design.livops.app").replace(/\/+$/, "");
 const MANIFEST = "https://zlsr1a9rg6d9gcbj.public.blob.vercel-storage.com/data/manifest.json";
 /** Файлы данных, которые читает сайт (assets/js/data.js) */
-const DATA = ["catalog", "rates", "rates-history", "atms", "atms-home", "gold", "p2p", "complaints"];
+const DATA = ["catalog", "rates", "rates-history", "atms", "atms-home", "gold", "p2p", "complaints", "stocks"];
+/** Необязательные файлы: истории цен акций (stocks/<ТИКЕР>.json) — нет их в хранилище, страница бумаги рисуется без графика */
+const OPTIONAL_PREFIX = "stocks/";
 const LOCALE = { ru: "ru_RU", uz: "uz_UZ", en: "en_US" };
 const VIEW_TIMEOUT = 6000;
 
@@ -55,11 +57,21 @@ async function loadData() {
   const data = {};
   for (const name of DATA) {
     const f = m.files?.[`${name}.json`];
+    // акций в хранилище ещё может не быть (раздел новый): сборка не падает, страницы акций покажут «не загрузились»
+    if (!f?.url && name === "stocks") { console.warn("  ! в манифесте нет stocks.json — раздел акций без данных"); continue; }
     if (!f?.url) throw new Error(`в манифесте нет ${name}.json`);
     data[name] = await getJson(f.url);
     write(`data/${name}.json`, JSON.stringify(data[name]));
   }
-  log(`данные: ${DATA.length} файлов, обновлены ${m.updatedAt}`);
+  // истории цен акций — по файлу на бумагу, по 8 одновременно
+  const hist = Object.entries(m.files ?? {}).filter(([n]) => n.startsWith(OPTIONAL_PREFIX));
+  for (let i = 0; i < hist.length; i += 8) {
+    await Promise.all(hist.slice(i, i + 8).map(async ([n, f]) => {
+      const name = n.slice(0, -5);
+      try { data[name] = await getJson(f.url); write(`data/${n}`, JSON.stringify(data[name])); } catch (e) { console.warn(`  ! ${n}: ${e.message}`); }
+    }));
+  }
+  log(`данные: ${DATA.length} файлов и ${hist.length} историй цен акций, обновлены ${m.updatedAt}`);
   return data;
 }
 
@@ -93,10 +105,13 @@ function copyStatic() {
 
 // ── 3. Страницы ──
 /** Все готовые страницы: путь без языка → необязательный канонический путь (если страница — копия другой) */
-function routes(db) {
+function routes(db, data) {
+  // страницы бумаг — только тех, что торгуются: у снятых с торгов нет текущих данных
+  const stocks = (data.stocks?.stocks ?? []).filter((s) => s.status !== "gone").map((s) => [["stocks", s.t]]);
   const r = [[[]], [["credits"]], ...["micro", "consumer", "auto", "mortgage", "edu"].map((t) => [["credits", t]]),
     [["deposits"]], [["cards"]], [["transfers"]],
     [["rates"]], [["rates", "USD"], ["rates"]], [["rates", "EUR"]], [["rates", "RUB"]], [["rates", "gold"]],
+    [["stocks"]], ...stocks,
     [["map"]], [["check"]], [["banks"]], [["banks", "complaints"]], ...db.banks.map((b) => [["bank", b.id]]), [["chat"]]];
   return r.map(([p, canon]) => ({ path: p, canon: canon ?? p }));
 }
@@ -150,7 +165,7 @@ async function prerender(data, assets) {
 
   const pages = [];
   const urlOf = (p, lang) => SITE + nav.href(nav.pathOf(p), lang);
-  const all = routes(db);
+  const all = routes(db, data);
   for (const lang of nav.LANGS) {
     for (const r of all) {
       const html = await renderPage({ document, bodyHtml, tpl, nav, app, i18n, S, lang, route: r, urlOf });

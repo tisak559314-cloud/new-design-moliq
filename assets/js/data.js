@@ -69,6 +69,10 @@ export const gold = () => load("gold");
 export const p2p = () => load("p2p");
 /** Индекс жалоб ЦБ по банкам за квартал (data/complaints.json, из публикации ЦБ) */
 export const complaints = () => load("complaints");
+/** Акции: бумаги биржи «Тошкент» с ценами и все АО из Центрального депозитария (moliq: scripts/import-stocks.mjs) */
+export const stocks = () => load("stocks");
+/** Цены бумаги по дням — отдельный файл на тикер, грузится только на странице бумаги */
+export const stockHistory = (ticker) => load(`stocks/${ticker}`);
 
 export const bankName = (id) => db.bank[id]?.name || id;
 export const stats = {

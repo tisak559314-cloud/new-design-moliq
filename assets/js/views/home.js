@@ -1,6 +1,6 @@
 // Главная: без приветствия. Сразу дела — кредит, вклад, карта, курс, банкомат.
 import { $, $$, esc, icon, flag, sticker, fmt, fmt2, short, pct, term, plural, moneyInput } from "../lib.js";
-import { db, atmsHome, gold, p2p, stats, fxBest, fxDelta, bankName, LOAN_TYPES } from "../data.js";
+import { db, atmsHome, gold, p2p, stocks, stats, fxBest, fxDelta, bankName, LOAN_TYPES } from "../data.js";
 import { store, save, go } from "../store.js";
 import { href } from "../nav.js";
 import { bankLogo, rateRange } from "../app.js";
@@ -31,7 +31,8 @@ export default async function home(root) {
       <div class="tile"><h2 class="tile-t"><a href="#/rates">Обменять валюту</a></h2><p class="tile-h">Доллар — <b class="num">${fmt(db.rates.cbu.USD)}</b> сум</p>${sticker("swap")}</div>
       <div class="tile"><h2 class="tile-t"><a href="#/map">Найти банкомат</a></h2><p class="tile-h" id="atm-n">По всему Узбекистану</p>${sticker("pin")}</div>
       <div class="tile tile-wide"><h2 class="tile-t"><a href="#/transfers">Перевести без комиссии</a></h2><p class="tile-h" id="p2p-h">С карты на карту</p>${sticker("send")}</div>
-      <div class="tile tile-wide"><h2 class="tile-t"><a href="#/rates/gold">Купить золото</a></h2><p class="tile-h" id="gold-h">Слитки Центрального банка</p>${sticker("gold")}</div>
+      <div class="tile"><h2 class="tile-t"><a href="#/rates/gold">Купить золото</a></h2><p class="tile-h" id="gold-h">Слитки Центрального банка</p>${sticker("gold")}</div>
+      <div class="tile tile-stocks"><h2 class="tile-t"><a href="#/stocks">Акции</a></h2><p class="tile-h" id="stk-h">Биржа «Тошкент»</p>${sticker("chart")}</div>
     </section>
 
     <div class="check-bar">
@@ -134,6 +135,10 @@ export default async function home(root) {
   gold().then((d) => {
     const bar = d.bars[0];
     if (!gone && bar) $("#gold-h", root).outerHTML = `<p class="tile-h" id="gold-h" data-i18n="hint-gold">Слиток <b class="num">${bar.g}</b> г — <b class="num">${fmt(bar.sell)}</b> сум</p>`;
+  }).catch(() => {});
+  stocks().then((d) => {
+    const n = d.stocks.filter((s) => s.status !== "gone").length;
+    if (!gone && n) $("#stk-h", root).outerHTML = `<p class="tile-h" id="stk-h" data-i18n="hint-stocks"><b class="num">${n}</b> ${plural(n, ["бумага", "бумаги", "бумаг"])} на бирже</p>`;
   }).catch(() => {});
 
   // ── События ──

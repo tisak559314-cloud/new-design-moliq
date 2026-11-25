@@ -44,8 +44,13 @@ export function stats(db, extra) {
     // лимит без комиссии между любыми картами (Uzcard ↔ Humo) у самого щедрого приложения
     p2pTop: Math.max(0, ...p2pApps.filter((a) => !a.ownCard).flatMap((a) => a.rules.filter((r) => r.from.length > 1 && r.to.length > 1).map((r) => r.limit))),
     period: extra.complaints?.period,
+    stocks: (extra.stocks?.stocks ?? []).filter((s) => s.status !== "gone"),
+    issuers: extra.stocks?.issuers?.length ?? 0,
   };
 }
+/** Цена акции: «12 650», «6,49» */
+const px = (lang, p) => (p >= 100 ? fmt(lang, p) : String(Math.round(p * 100) / 100).replace(".", lang === "en" ? "." : ","));
+const dmy = (iso) => `${iso.slice(8, 10)}.${iso.slice(5, 7)}.${iso.slice(0, 4)}`;
 
 /** Метатеги страницы: { title, description, noindex? }. path — как в маршрутах сайта (["credits", "micro"]) */
 export function meta(S, path, lang) {
@@ -150,6 +155,28 @@ export function meta(S, path, lang) {
           `${b.name}: ${ru(n(S.loans), "loan")}, ${ru(n(S.deps), "dep")}, ${ru(n(S.cards), "card")}, курсы валют и банкоматы на карте.`,
           `${b.name}: ${n(S.loans)} ta kredit, ${n(S.deps)} ta omonat, ${n(S.cards)} ta karta, valyuta kurslari va xaritadagi bankomatlar.`,
           `${b.name}: ${en(n(S.loans), "loan")}, ${en(n(S.deps), "deposit")}, ${en(n(S.cards), "card")}, exchange rates and ATMs on the map.`),
+      };
+    }
+    case "stocks": {
+      if (path[1]) {
+        const s = S.stocks.find((x) => x.t === path[1]);
+        if (!s) return { title: "Moliq", description: "", noindex: true };
+        const last = s.last ? { ru: `Последняя сделка — ${px("ru", s.last.p)} сум (${dmy(s.last.d)}). `, uz: `Soʻnggi bitim — ${px("uz", s.last.p)} soʻm (${dmy(s.last.d)}). `, en: `Last trade: ${px("en", s.last.p)} UZS (${dmy(s.last.d)}). ` }[lang] : "";
+        return {
+          title: L(lang, `${s.t} — акции ${s.name}: цена и график`, `${s.t} — ${s.name} aksiyalari: narx va grafik`, `${s.t} — ${s.name} shares: price and chart`) + brand,
+          description: last + L(lang,
+            "Цены сделок на бирже «Тошкент» по дням, оборот, ликвидность по оценке биржи и где купить.",
+            "«Toshkent» birjasidagi kunlik bitim narxlari, aylanma, birja bahosidagi likvidlik va qayerdan sotib olish.",
+            "Daily trade prices on the Tashkent Stock Exchange, turnover, the exchange’s liquidity rating and where to buy."),
+        };
+      }
+      const n = S.stocks.length;
+      return {
+        title: L(lang, "Акции Узбекистана — цены на бирже «Тошкент»", "Oʻzbekiston aksiyalari — «Toshkent» birjasidagi narxlar", "Stocks of Uzbekistan — prices on the Tashkent Stock Exchange") + brand,
+        description: L(lang,
+          `${fmt(lang, n)} ${plural(n, ["бумага", "бумаги", "бумаг"])} на бирже и ${fmt(lang, S.issuers)} акционерных обществ: последние сделки, оборот, ликвидность, графики цен и где купить.`,
+          `Birjadagi ${fmt(lang, n)} ta qimmatli qogʻoz va ${fmt(lang, S.issuers)} ta aksiyadorlik jamiyati: soʻnggi bitimlar, aylanma, likvidlik, narx grafiklari va qayerdan sotib olish.`,
+          `${fmt(lang, n)} securities on the exchange and ${fmt(lang, S.issuers)} joint-stock companies: last trades, turnover, liquidity, price charts and where to buy.`),
       };
     }
     case "chat": return {

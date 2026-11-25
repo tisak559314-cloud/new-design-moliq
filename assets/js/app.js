@@ -1,8 +1,8 @@
 // Интерфейс сайта: шапка, нижняя панель, подвал, окна, поиск, сравнение, общие помощники страниц.
 // Модуль без побочных эффектов: его подключают страницы, main.js (запуск в браузере) и сборка (отрисовка страниц
 // заранее, tools/build.mjs). Маршруты и обработчики событий — в main.js.
-import { $, $$, esc, safeUrl, icon, flag, toast, pct, short, term } from "./lib.js";
-import { db, bankName } from "./data.js";
+import { $, $$, esc, safeUrl, icon, flag, toast, pct, short, term, fmt2 } from "./lib.js";
+import { db, bankName, stocks as loadStocks } from "./data.js";
 import { store, save } from "./store.js";
 import { href, lang } from "./nav.js";
 
@@ -12,6 +12,7 @@ export const NAV = [
   { id: "cards", label: "Карты", icon: "card" },
   { id: "transfers", label: "Переводы", icon: "send" },
   { id: "rates", label: "Курсы валют", tab: "Курсы", icon: "fx" },
+  { id: "stocks", label: "Акции", icon: "stock" },
   { id: "map", label: "Банкоматы", tab: "Карта", icon: "pin" },
   { id: "check", label: "Что мне по силам", icon: "gauge" },
 ];
@@ -31,8 +32,9 @@ export const VIEWS = {
   chat: () => import("./views/chat.js"),
   banks: () => import("./views/banks.js"),
   bank: () => import("./views/banks.js"),
+  stocks: () => import("./views/stocks.js"),
 };
-export const TITLES = { "": "Moliq — кредиты, вклады, карты и курсы банков Узбекистана", credits: "Кредиты", deposits: "Вклады", cards: "Карты", transfers: "Переводы без комиссии", rates: "Курсы валют", check: "Что мне по силам", map: "Банкоматы на карте", chat: "AI-чат", banks: "Банки", bank: "Банк" };
+export const TITLES = { "": "Moliq — кредиты, вклады, карты и курсы банков Узбекистана", credits: "Кредиты", deposits: "Вклады", cards: "Карты", transfers: "Переводы без комиссии", rates: "Курсы валют", check: "Что мне по силам", map: "Банкоматы на карте", chat: "AI-чат", banks: "Банки", bank: "Банк", stocks: "Акции Узбекистана" };
 
 export const bankLogo = (id, cls = "") => {
   const b = db.bank[id];
@@ -108,6 +110,8 @@ export function openSearch() {
   const q = $("#q"), box = $("#q-res");
   const paint = () => { box.innerHTML = searchResults(q.value); };
   q.addEventListener("input", paint);
+  // акции — отдельный файл: подгружаем при открытии поиска и дорисовываем результаты, когда пришёл
+  if (!stockList) loadStocks().then((d) => { stockList = d.stocks.filter((s) => s.status !== "gone"); if (layer().contains(q)) paint(); }).catch(() => {});
   q.addEventListener("keydown", (e) => {
     const items = $$(".res", box);
     if (!items.length) return;
@@ -123,10 +127,11 @@ export function openSearch() {
   paint();
   q.focus();
 }
+let stockList = null;
 export function searchResults(text) {
   const t = searchKey(text);
   if (!t) {
-    return `<div class="res-g">Часто ищут</div>${[["#/credits/micro", "Микрозаймы"], ["#/deposits", "Вклады в сумах"], ["#/rates/USD", "Курс доллара"], ["#/rates/gold", "Золотые слитки"], ["#/transfers", "Переводы без комиссии"], ["#/map", "Банкоматы рядом"]].map(([h, l]) => `<a class="res" href="${h}"><b>${l}</b></a>`).join("")}`;
+    return `<div class="res-g">Часто ищут</div>${[["#/credits/micro", "Микрозаймы"], ["#/deposits", "Вклады в сумах"], ["#/rates/USD", "Курс доллара"], ["#/rates/gold", "Золотые слитки"], ["#/stocks", "Акции Узбекистана"], ["#/transfers", "Переводы без комиссии"], ["#/map", "Банкоматы рядом"]].map(([h, l]) => `<a class="res" href="${h}"><b>${l}</b></a>`).join("")}`;
   }
   const has = (...xs) => xs.some((s) => searchKey(s).includes(t));
   const banks = db.banks.filter((b) => has(b.name, b.id)).slice(0, 4);
@@ -135,7 +140,11 @@ export function searchResults(text) {
   const cards = db.cards.filter((c) => has(c.name, bankName(c.bankId))).slice(0, 5);
   const row = (to, id, title, sub, right) => `<a class="res" href="${to}">${bankLogo(id, "sm")}<div><b>${esc(title)}</b><span>${esc(sub)}</span></div>${right ? `<span class="r num">${esc(right)}</span>` : ""}</a>`;
   const g = (title, rows) => (rows.length ? `<div class="res-g">${title}</div>${rows.join("")}` : "");
+  // тикер ищем и с начала («uzm» → UZMT), и в названии компании
+  const stocks = (stockList ?? []).filter((s) => s.t.toLowerCase().startsWith(t.replace(/\s/g, "")) || searchKey(`${s.name} ${s.full || ""} ${s.code}`).includes(t)).slice(0, 4);
+  const stockRow = (s) => `<a class="res" href="#/stocks/${esc(s.t)}"><span class="stk-ava sm s-${esc(s.sector)}" aria-hidden="true">${esc(s.t)}</span><div><b>${esc(s.name)}</b><span>${esc(s.t)} · Акции</span></div>${s.last ? `<span class="r num">${esc(fmt2(s.last.p))} сум</span>` : ""}</a>`;
   const out = g("Банки", banks.map((b) => row(`#/bank/${b.id}`, b.id, b.name, "Все продукты банка")))
+    + g("Акции", stocks.map(stockRow))
     + g("Кредиты", loans.map((l) => row(`#/credits/${l.type}?open=${l.id}`, l.bankId, l.name, bankName(l.bankId), l.rateLo != null ? rateRange(l) : "")))
     + g("Вклады", deps.map((d) => row(`#/deposits?cur=${d.cur}&open=${d.id}`, d.bankId, d.name, bankName(d.bankId), d.rate != null ? pct(d.rate) : "")))
     + g("Карты", cards.map((c) => row(`#/cards?open=${c.id}`, c.bankId, c.name, bankName(c.bankId), c.systems.join(", "))));
